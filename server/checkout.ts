@@ -25,6 +25,8 @@ interface CreateCheckoutBody {
  * Creates a Stripe Checkout Session for either hosting or domain purchases.
  * Accepts priceId, customer info, and optional domain metadata.
  * Returns { sessionId, url } for frontend redirect.
+ *
+ * Success/cancel URLs always point to the production domain (businessbloomllc.com).
  */
 checkoutRouter.post("/api/create-checkout", async (req, res) => {
   try {
@@ -48,7 +50,10 @@ checkoutRouter.post("/api/create-checkout", async (req, res) => {
       return res.status(400).json({ error: "customerEmail is required" });
     }
 
-    const origin = req.headers.origin || `${req.protocol}://${req.get("host")}`;
+    // Always use the production domain for Stripe redirect URLs.
+    // This ensures checkout works correctly regardless of the request origin
+    // (e.g. Railway preview URLs, localhost, etc.).
+    const PRODUCTION_ORIGIN = "https://businessbloomllc.com";
 
     // Build metadata object
     const metadata: Record<string, string> = {};
@@ -72,8 +77,8 @@ checkoutRouter.post("/api/create-checkout", async (req, res) => {
       ],
       customer_email: customerEmail,
       metadata,
-      success_url: `${origin}/domains?success=true`,
-      cancel_url: `${origin}/domains?canceled=true`,
+      success_url: `${PRODUCTION_ORIGIN}/domains?success=true`,
+      cancel_url: `${PRODUCTION_ORIGIN}/domains?canceled=true`,
       allow_promotion_codes: true,
     };
 
