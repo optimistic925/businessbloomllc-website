@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
+import { initiateCheckout } from "@/lib/checkout";
+import { SERVICE_PRICES } from "../../../shared/servicePricing";
 
 const services = [
   {
@@ -27,6 +29,8 @@ const services = [
       "Analytics setup",
     ],
     turnaround: "7–14 days",
+    price: "$1,497",
+    priceKey: "DFY_WEBSITE" as const,
   },
   {
     icon: Bot,
@@ -41,6 +45,8 @@ const services = [
       "Testing & QA",
     ],
     turnaround: "5–10 days",
+    price: "$2,497",
+    priceKey: "DFY_AUTOMATION" as const,
   },
   {
     icon: Palette,
@@ -55,6 +61,8 @@ const services = [
       "Business card design",
     ],
     turnaround: "5–7 days",
+    price: null,
+    priceKey: null,
   },
   {
     icon: Mail,
@@ -69,6 +77,8 @@ const services = [
       "A/B testing framework",
     ],
     turnaround: "5–7 days",
+    price: null,
+    priceKey: null,
   },
   {
     icon: BarChart3,
@@ -83,6 +93,8 @@ const services = [
       "Team access setup",
     ],
     turnaround: "3–5 days",
+    price: null,
+    priceKey: null,
   },
   {
     icon: Wrench,
@@ -97,13 +109,30 @@ const services = [
       "Documentation",
     ],
     turnaround: "5–14 days",
+    price: null,
+    priceKey: null,
   },
 ];
 
 export default function DfyServices() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const showSuccess = urlParams.get("success") === "true";
+
   return (
     <div className="min-h-screen bg-[#0B0F1A] text-white overflow-x-hidden">
       <NavBar />
+
+      {/* Success Banner */}
+      {showSuccess && (
+        <div className="fixed top-16 left-0 right-0 z-40 bg-[#14B8A6]/20 border-b border-[#14B8A6]/30 py-3">
+          <div className="max-w-7xl mx-auto px-4 text-center">
+            <p className="text-[#14B8A6] font-medium flex items-center justify-center gap-2">
+              <CheckCircle className="h-5 w-5" />
+              Payment successful! Our team will reach out within 24 hours to begin your project.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Hero */}
       <section className="relative pt-32 pb-16 overflow-hidden">
@@ -207,7 +236,7 @@ export default function DfyServices() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
-                className="p-6 rounded-2xl bg-[#0D1120] border border-white/10 hover:border-[#14B8A6]/30 transition-all"
+                className="p-6 rounded-2xl bg-[#0D1120] border border-white/10 hover:border-[#14B8A6]/30 transition-all flex flex-col"
               >
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-xl bg-[#14B8A6]/10 flex items-center justify-center">
@@ -224,7 +253,7 @@ export default function DfyServices() {
                 <p className="text-white/50 text-sm mb-4 leading-relaxed">
                   {service.description}
                 </p>
-                <ul className="space-y-2">
+                <ul className="space-y-2 mb-6">
                   {service.deliverables.map((item) => (
                     <li
                       key={item}
@@ -235,6 +264,28 @@ export default function DfyServices() {
                     </li>
                   ))}
                 </ul>
+                <div className="mt-auto">
+                  {service.priceKey ? (
+                    <button
+                      onClick={() =>
+                        initiateCheckout(
+                          SERVICE_PRICES[service.priceKey!].priceId,
+                          service.title
+                        )
+                      }
+                      className="w-full px-4 py-2.5 rounded-xl bg-[#14B8A6] text-white text-sm font-bold hover:bg-[#0FA897] transition-colors cursor-pointer"
+                    >
+                      Buy Now — {service.price}
+                    </button>
+                  ) : (
+                    <a
+                      href="/get-started"
+                      className="block w-full px-4 py-2.5 rounded-xl border border-white/10 text-white text-sm font-bold hover:bg-white/5 transition-colors text-center"
+                    >
+                      Get a Quote
+                    </a>
+                  )}
+                </div>
               </motion.div>
             ))}
           </div>
@@ -254,7 +305,7 @@ export default function DfyServices() {
               className="text-3xl sm:text-4xl font-black mb-4"
               style={{ fontFamily: "var(--font-display)" }}
             >
-              Ready to Hand It Off?
+              Need Something Custom?
             </h2>
             <p className="text-white/60 max-w-2xl mx-auto mb-8 text-lg">
               Tell us what you need and we'll deliver a complete, working system
@@ -264,7 +315,7 @@ export default function DfyServices() {
               href="/get-started"
               className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#14B8A6] text-white font-bold hover:opacity-90 transition-opacity text-lg"
             >
-              Request a DFY Quote <ArrowRight className="h-5 w-5" />
+              Request a Custom Quote <ArrowRight className="h-5 w-5" />
             </a>
           </motion.div>
         </div>

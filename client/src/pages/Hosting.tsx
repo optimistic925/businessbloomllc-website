@@ -11,12 +11,15 @@ import {
 } from "lucide-react";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
+import { initiateCheckout } from "@/lib/checkout";
+import { SERVICE_PRICES } from "../../../shared/servicePricing";
 
 const plans = [
   {
     name: "Starter",
     price: "$19",
     period: "/mo",
+    priceKey: "HOSTING_STARTER" as const,
     description: "Perfect for small business websites and landing pages.",
     features: [
       "1 website",
@@ -31,6 +34,7 @@ const plans = [
     name: "Business",
     price: "$49",
     period: "/mo",
+    priceKey: "HOSTING_BUSINESS" as const,
     description: "For growing businesses with multiple sites and higher traffic.",
     features: [
       "Up to 5 websites",
@@ -48,6 +52,7 @@ const plans = [
     name: "Enterprise",
     price: "$99",
     period: "/mo",
+    priceKey: "HOSTING_ENTERPRISE" as const,
     description: "High-performance hosting for mission-critical applications.",
     features: [
       "Unlimited websites",
@@ -97,9 +102,24 @@ const features = [
 ];
 
 export default function Hosting() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const showSuccess = urlParams.get("success") === "true";
+
   return (
     <div className="min-h-screen bg-[#0B0F1A] text-white overflow-x-hidden">
       <NavBar />
+
+      {/* Success Banner */}
+      {showSuccess && (
+        <div className="fixed top-16 left-0 right-0 z-40 bg-[#14B8A6]/20 border-b border-[#14B8A6]/30 py-3">
+          <div className="max-w-7xl mx-auto px-4 text-center">
+            <p className="text-[#14B8A6] font-medium flex items-center justify-center gap-2">
+              <CheckCircle className="h-5 w-5" />
+              Subscription activated! We'll send your hosting credentials within the hour.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Hero */}
       <section className="relative pt-32 pb-16 overflow-hidden">
@@ -229,16 +249,21 @@ export default function Hosting() {
                     </li>
                   ))}
                 </ul>
-                <a
-                  href="/get-started"
-                  className={`block text-center px-6 py-3 rounded-xl font-bold transition-colors ${
+                <button
+                  onClick={() =>
+                    initiateCheckout(
+                      SERVICE_PRICES[plan.priceKey].priceId,
+                      `Hosting ${plan.name}`
+                    )
+                  }
+                  className={`w-full block text-center px-6 py-3 rounded-xl font-bold transition-colors cursor-pointer ${
                     plan.featured
                       ? "bg-[#14B8A6] text-white hover:bg-[#0FA897]"
                       : "border border-white/10 text-white hover:bg-white/5"
                   }`}
                 >
-                  Get Started
-                </a>
+                  Subscribe — {plan.price}/mo
+                </button>
               </motion.div>
             ))}
           </div>

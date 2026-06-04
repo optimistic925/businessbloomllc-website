@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
+import { initiateCheckout } from "@/lib/checkout";
+import { SERVICE_PRICES } from "../../../shared/servicePricing";
 
 const packs = [
   {
@@ -19,6 +21,7 @@ const packs = [
     icon: Target,
     prompts: 50,
     price: "$47",
+    priceKey: "PROMPT_STARTER" as const,
   },
   {
     title: "Marketing & Content Pack",
@@ -27,6 +30,7 @@ const packs = [
     icon: MessageSquare,
     prompts: 75,
     price: "$67",
+    priceKey: "PROMPT_PRO" as const,
   },
   {
     title: "Operations & SOPs Pack",
@@ -35,6 +39,7 @@ const packs = [
     icon: FileText,
     prompts: 40,
     price: "$37",
+    priceKey: null, // No Stripe price for this one — links to get-started
   },
   {
     title: "Complete Business Bundle",
@@ -43,6 +48,7 @@ const packs = [
     icon: Brain,
     prompts: 165,
     price: "$97",
+    priceKey: "PROMPT_ULTIMATE" as const,
     featured: true,
   },
 ];
@@ -57,9 +63,24 @@ const benefits = [
 ];
 
 export default function PromptPacks() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const showSuccess = urlParams.get("success") === "true";
+
   return (
     <div className="min-h-screen bg-[#0B0F1A] text-white overflow-x-hidden">
       <NavBar />
+
+      {/* Success Banner */}
+      {showSuccess && (
+        <div className="fixed top-16 left-0 right-0 z-40 bg-[#14B8A6]/20 border-b border-[#14B8A6]/30 py-3">
+          <div className="max-w-7xl mx-auto px-4 text-center">
+            <p className="text-[#14B8A6] font-medium flex items-center justify-center gap-2">
+              <CheckCircle className="h-5 w-5" />
+              Payment successful! Check your email for access to your prompt pack.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Hero */}
       <section className="relative pt-32 pb-16 overflow-hidden">
@@ -179,7 +200,7 @@ export default function PromptPacks() {
                     <p className="text-white/50 text-sm mb-4 leading-relaxed">
                       {pack.description}
                     </p>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between flex-wrap gap-4">
                       <div className="flex items-center gap-4">
                         <span className="text-2xl font-black text-[#14B8A6]">
                           {pack.price}
@@ -188,12 +209,26 @@ export default function PromptPacks() {
                           {pack.prompts}+ prompts
                         </span>
                       </div>
-                      <a
-                        href="/get-started"
-                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#7C3AED] text-white text-sm font-bold hover:bg-[#6D2FDD] transition-colors"
-                      >
-                        Get Pack <ArrowRight className="h-4 w-4" />
-                      </a>
+                      {pack.priceKey ? (
+                        <button
+                          onClick={() =>
+                            initiateCheckout(
+                              SERVICE_PRICES[pack.priceKey!].priceId,
+                              pack.title
+                            )
+                          }
+                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#7C3AED] text-white text-sm font-bold hover:bg-[#6D2FDD] transition-colors cursor-pointer"
+                        >
+                          Buy Now <ArrowRight className="h-4 w-4" />
+                        </button>
+                      ) : (
+                        <a
+                          href="/get-started"
+                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#7C3AED] text-white text-sm font-bold hover:bg-[#6D2FDD] transition-colors"
+                        >
+                          Get Pack <ArrowRight className="h-4 w-4" />
+                        </a>
+                      )}
                     </div>
                   </div>
                 </div>

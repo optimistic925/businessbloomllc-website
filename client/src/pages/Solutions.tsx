@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
+import { initiateCheckout } from "@/lib/checkout";
+import { SERVICE_PRICES } from "../../../shared/servicePricing";
 
 const automationSystems = [
   {
@@ -50,6 +52,7 @@ const packages = [
     id: "automation",
     name: "Automation System",
     price: "$997",
+    priceKey: "AUTOMATION_SYSTEM" as const,
     ideal: "Businesses that already have leads but are losing them to slow follow-up.",
     features: [
       "Speed to Lead automation",
@@ -63,7 +66,8 @@ const packages = [
   {
     id: "business-launch",
     name: "Business Launch System",
-    price: "$1,497 – $2,497",
+    price: "$1,497",
+    priceKey: "BUSINESS_LAUNCH" as const,
     ideal: "New businesses or those pivoting who need a complete launch-ready system.",
     features: [
       "Everything in Automation System",
@@ -78,7 +82,8 @@ const packages = [
   {
     id: "client-acquisition",
     name: "Scale System",
-    price: "$3,000 – $5,000+",
+    price: "$3,000",
+    priceKey: "SCALE_SYSTEM" as const,
     ideal: "Established businesses ready to scale with advanced automation and team systems.",
     features: [
       "Everything in Business Launch",
@@ -92,9 +97,24 @@ const packages = [
 ];
 
 export default function Solutions() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const showSuccess = urlParams.get("success") === "true";
+
   return (
     <div className="min-h-screen bg-[#0B0F1A] text-white overflow-x-hidden">
       <NavBar />
+
+      {/* Success Banner */}
+      {showSuccess && (
+        <div className="fixed top-16 left-0 right-0 z-40 bg-[#14B8A6]/20 border-b border-[#14B8A6]/30 py-3">
+          <div className="max-w-7xl mx-auto px-4 text-center">
+            <p className="text-[#14B8A6] font-medium flex items-center justify-center gap-2">
+              <CheckCircle className="h-5 w-5" />
+              Payment successful! Our team will reach out within 24 hours to get you started.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Hero */}
       <section className="relative pt-32 pb-16 overflow-hidden">
@@ -247,16 +267,21 @@ export default function Solutions() {
                     </li>
                   ))}
                 </ul>
-                <a
-                  href="/get-started"
-                  className={`block text-center px-6 py-3 rounded-xl font-bold transition-colors ${
+                <button
+                  onClick={() =>
+                    initiateCheckout(
+                      SERVICE_PRICES[pkg.priceKey].priceId,
+                      pkg.name
+                    )
+                  }
+                  className={`w-full block text-center px-6 py-3 rounded-xl font-bold transition-colors cursor-pointer ${
                     pkg.featured
                       ? "bg-[#7C3AED] text-white hover:bg-[#6D2FDD]"
                       : "border border-white/10 text-white hover:bg-white/5"
                   }`}
                 >
-                  Get Started
-                </a>
+                  Buy Now — {pkg.price}
+                </button>
               </motion.div>
             ))}
           </div>

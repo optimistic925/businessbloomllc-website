@@ -1,5 +1,6 @@
 import { Router } from "express";
 import Stripe from "stripe";
+import { isRecurringPrice, getSuccessPath } from "../shared/servicePricing";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2026-05-27.dahlia",
@@ -10,20 +11,23 @@ export const checkoutRouter = Router();
 interface CreateCheckoutBody {
   priceId: string;
   customerName?: string;
-  customerEmail: string;
+  customerEmail?: string;
   customerPhone?: string;
   smsConsent?: boolean;
   domainName?: string;
   businessName?: string;
   domain?: string;
   billingPeriod?: string;
+  productName?: string;
+  successPath?: string;
 }
 
 /**
  * POST /api/create-checkout
  *
- * Creates a Stripe Checkout Session for either hosting or domain purchases.
- * Accepts priceId, customer info, and optional domain metadata.
+ * Creates a Stripe Checkout Session for any product (one-time or subscription).
+ * Automatically detects recurring vs one-time based on the price ID.
+ * customerEmail is optional — Stripe Checkout will collect it if not provided.
  * Returns { sessionId, url } for frontend redirect.
  *
  * Success/cancel URLs always point to the production domain (businessbloomllc.com).
@@ -40,20 +44,25 @@ checkoutRouter.post("/api/create-checkout", async (req, res) => {
       businessName,
       domain,
       billingPeriod,
+      productName,
+      successPath: clientSuccessPath,
     } = req.body as CreateCheckoutBody;
 
     if (!priceId) {
       return res.status(400).json({ error: "priceId is required" });
     }
 
-    if (!customerEmail) {
-      return res.status(400).json({ error: "customerEmail is required" });
-    }
-
     // Always use the production domain for Stripe redirect URLs.
-    // This ensures checkout works correctly regardless of the request origin
-    // (e.g. Railway preview URLs, localhost, etc.).
     const PRODUCTION_ORIGIN = "https://businessbloomllc.com";
+
+    // Determine the success redirect path
+    const successPath = clientSuccessPath || getSuccessPath(priceId) || "/";
+
+    // Determine if this is a recurring subscription or one-time payment
+    const recurring = isRecurringPrice(priceId);
+    const mode: Stripe.Checkout.SessionCreateParams["mode"] = recurring
+      ? "subscription"
+      : "payment";
 
     // Build metadata object
     const metadata: Record<string, string> = {};
@@ -65,9 +74,10 @@ checkoutRouter.post("/api/create-checkout", async (req, res) => {
     if (businessName) metadata.business_name = businessName;
     if (domain) metadata.domain = domain;
     if (billingPeriod) metadata.billing_period = billingPeriod;
+    if (productName) metadata.product_name = productName;
 
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
-      mode: "payment",
+      mode,
       payment_method_types: ["card"],
       line_items: [
         {
@@ -75,12 +85,16 @@ checkoutRouter.post("/api/create-checkout", async (req, res) => {
           quantity: 1,
         },
       ],
-      customer_email: customerEmail,
       metadata,
-      success_url: `${PRODUCTION_ORIGIN}/domains?success=true`,
-      cancel_url: `${PRODUCTION_ORIGIN}/domains?canceled=true`,
+      success_url: `${PRODUCTION_ORIGIN}${successPath}?success=true`,
+      cancel_url: `${PRODUCTION_ORIGIN}${successPath}?canceled=true`,
       allow_promotion_codes: true,
     };
+
+    // Only set customer_email if provided (otherwise Stripe Checkout collects it)
+    if (customerEmail) {
+      sessionParams.customer_email = customerEmail;
+    }
 
     const session = await stripe.checkout.sessions.create(sessionParams);
 
@@ -172,11 +186,23 @@ checkoutRouter.post("/api/stripe/webhook", async (req, res) => {
           `[Webhook] Domain registration needed: ${session.metadata.domain_name} for ${session.customer_email}`
         );
       }
+
+      // Log product purchase
+      if (session.metadata?.product_name) {
+        console.log(
+          `[Webhook] Product purchased: ${session.metadata.product_name} by ${session.customer_email}`
+        );
+      }
       break;
     }
     case "payment_intent.succeeded": {
       const paymentIntent = event.data.object as Stripe.PaymentIntent;
       console.log("[Webhook] Payment succeeded:", paymentIntent.id);
+      break;
+    }
+    case "customer.subscription.created": {
+      const subscription = event.data.object as Stripe.Subscription;
+      console.log("[Webhook] Subscription created:", subscription.id);
       break;
     }
     default:

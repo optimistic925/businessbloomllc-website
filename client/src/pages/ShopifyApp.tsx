@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
+import { initiateCheckout } from "@/lib/checkout";
+import { SERVICE_PRICES } from "../../../shared/servicePricing";
 
 const features = [
   {
@@ -56,6 +58,7 @@ const plans = [
     name: "Basic",
     price: "$29",
     period: "/mo",
+    priceKey: "SHOPIFY_BASIC" as const,
     features: [
       "1 Shopify store",
       "Order automation",
@@ -68,6 +71,7 @@ const plans = [
     name: "Growth",
     price: "$79",
     period: "/mo",
+    priceKey: "SHOPIFY_PRO" as const,
     features: [
       "Up to 3 stores",
       "Advanced automation",
@@ -81,8 +85,9 @@ const plans = [
   },
   {
     name: "Enterprise",
-    price: "$199",
-    period: "/mo",
+    price: "Custom",
+    period: "",
+    priceKey: null,
     features: [
       "Unlimited stores",
       "Custom automation rules",
@@ -96,9 +101,24 @@ const plans = [
 ];
 
 export default function ShopifyApp() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const showSuccess = urlParams.get("success") === "true";
+
   return (
     <div className="min-h-screen bg-[#0B0F1A] text-white overflow-x-hidden">
       <NavBar />
+
+      {/* Success Banner */}
+      {showSuccess && (
+        <div className="fixed top-16 left-0 right-0 z-40 bg-[#14B8A6]/20 border-b border-[#14B8A6]/30 py-3">
+          <div className="max-w-7xl mx-auto px-4 text-center">
+            <p className="text-[#14B8A6] font-medium flex items-center justify-center gap-2">
+              <CheckCircle className="h-5 w-5" />
+              Subscription activated! Check your email for setup instructions.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Hero */}
       <section className="relative pt-32 pb-16 overflow-hidden">
@@ -149,12 +169,17 @@ export default function ShopifyApp() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
-            <a
-              href="/get-started"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-[#7C3AED] text-white font-bold hover:bg-[#6D2FDD] transition-colors text-lg"
+            <button
+              onClick={() =>
+                initiateCheckout(
+                  SERVICE_PRICES.SHOPIFY_PRO.priceId,
+                  "Shopify App Growth"
+                )
+              }
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-[#7C3AED] text-white font-bold hover:bg-[#6D2FDD] transition-colors text-lg cursor-pointer"
             >
-              Install App <ArrowRight className="h-5 w-5" />
-            </a>
+              Start Free Trial <ArrowRight className="h-5 w-5" />
+            </button>
             <a
               href="/free-shopify-store"
               className="inline-flex items-center gap-2 px-8 py-4 rounded-xl border border-white/10 text-white font-bold hover:bg-white/5 transition-colors text-lg"
@@ -259,7 +284,9 @@ export default function ShopifyApp() {
                   <span className="text-4xl font-black text-white">
                     {plan.price}
                   </span>
-                  <span className="text-white/40">{plan.period}</span>
+                  {plan.period && (
+                    <span className="text-white/40">{plan.period}</span>
+                  )}
                 </div>
                 <ul className="space-y-3 mb-8">
                   {plan.features.map((feature) => (
@@ -272,16 +299,30 @@ export default function ShopifyApp() {
                     </li>
                   ))}
                 </ul>
-                <a
-                  href="/get-started"
-                  className={`block text-center px-6 py-3 rounded-xl font-bold transition-colors ${
-                    plan.featured
-                      ? "bg-[#7C3AED] text-white hover:bg-[#6D2FDD]"
-                      : "border border-white/10 text-white hover:bg-white/5"
-                  }`}
-                >
-                  Start Free Trial
-                </a>
+                {plan.priceKey ? (
+                  <button
+                    onClick={() =>
+                      initiateCheckout(
+                        SERVICE_PRICES[plan.priceKey!].priceId,
+                        `Shopify App ${plan.name}`
+                      )
+                    }
+                    className={`w-full block text-center px-6 py-3 rounded-xl font-bold transition-colors cursor-pointer ${
+                      plan.featured
+                        ? "bg-[#7C3AED] text-white hover:bg-[#6D2FDD]"
+                        : "border border-white/10 text-white hover:bg-white/5"
+                    }`}
+                  >
+                    Start Free Trial — {plan.price}/mo
+                  </button>
+                ) : (
+                  <a
+                    href="/get-started"
+                    className="block w-full text-center px-6 py-3 rounded-xl border border-white/10 text-white font-bold hover:bg-white/5 transition-colors"
+                  >
+                    Contact Sales
+                  </a>
+                )}
               </motion.div>
             ))}
           </div>

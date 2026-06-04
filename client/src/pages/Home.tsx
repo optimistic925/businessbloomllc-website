@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
+import { initiateCheckout } from "@/lib/checkout";
+import { SERVICE_PRICES } from "../../../shared/servicePricing";
 
 const services = [
   {
@@ -62,6 +64,7 @@ const packages = [
   {
     name: "Automation System",
     price: "$997",
+    priceKey: "AUTOMATION_SYSTEM" as const,
     description: "Core automation workflows for lead management and follow-up.",
     features: [
       "Speed to Lead automation",
@@ -73,7 +76,8 @@ const packages = [
   },
   {
     name: "Business Launch System",
-    price: "$1,497 – $2,497",
+    price: "$1,497",
+    priceKey: "BUSINESS_LAUNCH" as const,
     description: "Everything you need to launch and start acquiring clients.",
     features: [
       "Full Automation System included",
@@ -86,7 +90,8 @@ const packages = [
   },
   {
     name: "Scale System",
-    price: "$3,000 – $5,000+",
+    price: "$3,000",
+    priceKey: "SCALE_SYSTEM" as const,
     description: "Advanced systems for businesses ready to scale aggressively.",
     features: [
       "Everything in Business Launch",
@@ -276,16 +281,21 @@ export default function Home() {
                     </li>
                   ))}
                 </ul>
-                <a
-                  href="/get-started"
-                  className={`block text-center px-6 py-3 rounded-xl font-bold transition-colors ${
+                <button
+                  onClick={() =>
+                    initiateCheckout(
+                      SERVICE_PRICES[pkg.priceKey].priceId,
+                      pkg.name
+                    )
+                  }
+                  className={`w-full block text-center px-6 py-3 rounded-xl font-bold transition-colors cursor-pointer ${
                     pkg.featured
                       ? "bg-[#7C3AED] text-white hover:bg-[#6D2FDD]"
                       : "border border-white/10 text-white hover:bg-white/5"
                   }`}
                 >
-                  Get Started
-                </a>
+                  Buy Now — {pkg.price}
+                </button>
               </motion.div>
             ))}
           </div>
