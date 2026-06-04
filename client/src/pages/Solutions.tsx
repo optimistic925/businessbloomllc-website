@@ -1,124 +1,117 @@
 import { motion } from "framer-motion";
 import {
   Zap,
-  Rocket,
-  TrendingUp,
-  Bot,
-  Globe,
-  ShoppingBag,
-  FileText,
+  Users,
+  RotateCcw,
+  BarChart3,
+  Cog,
   ArrowRight,
   CheckCircle,
+  Rocket,
 } from "lucide-react";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 
-const services = [
+const automationSystems = [
   {
     icon: Zap,
-    title: "Automation Systems",
+    title: "Speed to Lead",
     description:
-      "Speed to Lead, Follow-Up, Reactivation, Processing & Reporting — all on autopilot.",
-    href: "/solutions",
+      "Respond to new leads within seconds — not hours. Automated text, email, and voicemail drops the moment a lead comes in.",
   },
   {
-    icon: Bot,
-    title: "Prompt Packs",
+    icon: Users,
+    title: "Follow-Up System",
     description:
-      "AI prompt collections built for sales, marketing, and operations teams.",
-    href: "/prompt-packs",
+      "Multi-channel nurture sequences that keep your business top-of-mind until the prospect is ready to buy.",
   },
   {
-    icon: Rocket,
-    title: "DFY Services",
+    icon: RotateCcw,
+    title: "Reactivation Campaigns",
     description:
-      "Done-For-You setups so you can launch faster without the learning curve.",
-    href: "/dfy-services",
+      "Re-engage cold leads and past clients with targeted campaigns that bring revenue back from your existing database.",
   },
   {
-    icon: Globe,
-    title: "Hosting & Domains",
+    icon: Cog,
+    title: "Processing Automation",
     description:
-      "Reliable web hosting and domain registration with free SSL and privacy.",
-    href: "/hosting",
+      "Streamline onboarding, paperwork, scheduling, and internal workflows so nothing falls through the cracks.",
   },
   {
-    icon: ShoppingBag,
-    title: "Shopify Solutions",
+    icon: BarChart3,
+    title: "Reporting & Analytics",
     description:
-      "Custom Shopify app integration and free store setup to start selling today.",
-    href: "/shopify-app",
-  },
-  {
-    icon: FileText,
-    title: "Resources",
-    description:
-      "Guides, templates, and training to help you grow smarter and faster.",
-    href: "/resources",
+      "Real-time dashboards showing lead flow, conversion rates, revenue, and team performance at a glance.",
   },
 ];
 
 const packages = [
   {
+    id: "automation",
     name: "Automation System",
     price: "$997",
-    description: "Core automation workflows for lead management and follow-up.",
+    ideal: "Businesses that already have leads but are losing them to slow follow-up.",
     features: [
       "Speed to Lead automation",
-      "Follow-Up sequences",
-      "Reactivation campaigns",
+      "Follow-Up sequences (email + SMS)",
+      "Reactivation campaign templates",
       "Processing workflows",
-      "Reporting dashboards",
+      "Reporting dashboard setup",
+      "30-day email support",
     ],
   },
   {
+    id: "business-launch",
     name: "Business Launch System",
     price: "$1,497 – $2,497",
-    description: "Everything you need to launch and start acquiring clients.",
+    ideal: "New businesses or those pivoting who need a complete launch-ready system.",
     features: [
-      "Full Automation System included",
-      "Website & funnel setup",
-      "Brand identity package",
-      "Client acquisition system",
-      "30-day launch support",
+      "Everything in Automation System",
+      "Website or funnel build",
+      "Brand identity & messaging",
+      "Client acquisition funnel",
+      "Social media templates",
+      "30-day launch coaching",
     ],
     featured: true,
   },
   {
+    id: "client-acquisition",
     name: "Scale System",
     price: "$3,000 – $5,000+",
-    description: "Advanced systems for businesses ready to scale aggressively.",
+    ideal: "Established businesses ready to scale with advanced automation and team systems.",
     features: [
       "Everything in Business Launch",
-      "Multi-channel campaigns",
+      "Multi-channel ad campaigns",
       "Team training & SOPs",
-      "Custom integrations",
-      "Ongoing optimization",
+      "Custom API integrations",
+      "Advanced analytics & attribution",
+      "Ongoing optimization & support",
     ],
   },
 ];
 
-export default function Home() {
+export default function Solutions() {
   return (
     <div className="min-h-screen bg-[#0B0F1A] text-white overflow-x-hidden">
       <NavBar />
 
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20 overflow-hidden">
+      {/* Hero */}
+      <section className="relative pt-32 pb-16 overflow-hidden">
         <div className="absolute inset-0">
-          <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-[#7C3AED]/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#14B8A6]/8 rounded-full blur-3xl" />
+          <div className="absolute top-1/3 left-1/4 w-96 h-96 bg-[#7C3AED]/8 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-1/3 w-80 h-80 bg-[#14B8A6]/6 rounded-full blur-3xl" />
         </div>
 
-        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
             <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#7C3AED]/30 bg-[#7C3AED]/10 text-[#7C3AED] text-sm font-medium mb-8">
-              <Zap className="h-4 w-4" />
-              BUSINESS AUTOMATION SYSTEMS
+              <Rocket className="h-4 w-4" />
+              SOLUTIONS
             </span>
           </motion.div>
 
@@ -129,9 +122,9 @@ export default function Home() {
             className="text-4xl sm:text-5xl lg:text-6xl font-black leading-tight mb-6"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            Start, Grow &amp; Automate Your Business with{" "}
+            Business Automation{" "}
             <span className="bg-gradient-to-r from-[#7C3AED] to-[#14B8A6] bg-clip-text text-transparent">
-              Simple AI-Powered Systems
+              That Actually Works
             </span>
           </motion.h1>
 
@@ -139,37 +132,17 @@ export default function Home() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-xl text-white/60 max-w-3xl mx-auto mb-10 leading-relaxed"
+            className="text-xl text-white/60 max-w-2xl mx-auto leading-relaxed"
           >
-            Business Bloom LLC helps entrepreneurs and teams build scalable
-            systems for lead generation, client follow-up, and revenue growth —
-            so you can work less and earn more.
+            Stop losing leads and leaving money on the table. Our systems handle
+            the repetitive work so you can focus on closing deals and growing
+            revenue.
           </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
-          >
-            <a
-              href="/get-started"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-[#7C3AED] text-white font-bold hover:bg-[#6D2FDD] transition-colors text-lg"
-            >
-              Get Started <ArrowRight className="h-5 w-5" />
-            </a>
-            <a
-              href="/solutions"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl border border-white/10 text-white font-bold hover:bg-white/5 transition-colors text-lg"
-            >
-              View Solutions
-            </a>
-          </motion.div>
         </div>
       </section>
 
-      {/* Services Grid */}
-      <section className="py-20">
+      {/* Automation Systems */}
+      <section id="automation" className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -182,43 +155,41 @@ export default function Home() {
               className="text-3xl sm:text-4xl font-black mb-4"
               style={{ fontFamily: "var(--font-display)" }}
             >
-              Everything You Need to{" "}
-              <span className="text-[#14B8A6]">Grow</span>
+              Five Core Automation Systems
             </h2>
             <p className="text-white/60 max-w-2xl mx-auto">
-              From automation and AI tools to hosting and done-for-you services —
-              we provide the full stack for modern business growth.
+              Each system is designed to eliminate a specific bottleneck in your
+              business and can work independently or together.
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {services.map((service, index) => (
-              <motion.a
-                key={service.title}
-                href={service.href}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {automationSystems.map((system, index) => (
+              <motion.div
+                key={system.title}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
-                className="group p-6 rounded-2xl bg-[#0D1120] border border-white/10 hover:border-[#7C3AED]/40 transition-all"
+                className="p-6 rounded-2xl bg-[#0D1120] border border-white/10 hover:border-[#14B8A6]/30 transition-all"
               >
-                <div className="w-12 h-12 rounded-xl bg-[#7C3AED]/10 flex items-center justify-center mb-4 group-hover:bg-[#7C3AED]/20 transition-colors">
-                  <service.icon className="h-6 w-6 text-[#7C3AED]" />
+                <div className="w-12 h-12 rounded-xl bg-[#14B8A6]/10 flex items-center justify-center mb-4">
+                  <system.icon className="h-6 w-6 text-[#14B8A6]" />
                 </div>
                 <h3 className="text-lg font-bold text-white mb-2">
-                  {service.title}
+                  {system.title}
                 </h3>
                 <p className="text-white/50 text-sm leading-relaxed">
-                  {service.description}
+                  {system.description}
                 </p>
-              </motion.a>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Packages Section */}
-      <section className="py-20 border-t border-white/5">
+      {/* Packages */}
+      <section id="business-launch" className="py-20 border-t border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -231,15 +202,15 @@ export default function Home() {
               className="text-3xl sm:text-4xl font-black mb-4"
               style={{ fontFamily: "var(--font-display)" }}
             >
-              Core Packages
+              Choose Your Package
             </h2>
             <p className="text-white/60 max-w-2xl mx-auto">
-              Choose the system that matches where you are in your business
-              journey.
+              Whether you're just starting or ready to scale, we have a system
+              built for your stage.
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6" id="client-acquisition">
             {packages.map((pkg, index) => (
               <motion.div
                 key={pkg.name}
@@ -264,7 +235,7 @@ export default function Home() {
                 <p className="text-3xl font-black text-[#14B8A6] mb-3">
                   {pkg.price}
                 </p>
-                <p className="text-white/50 text-sm mb-6">{pkg.description}</p>
+                <p className="text-white/50 text-sm mb-6">{pkg.ideal}</p>
                 <ul className="space-y-3 mb-8">
                   {pkg.features.map((feature) => (
                     <li
@@ -292,7 +263,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* CTA */}
       <section className="py-20 border-t border-white/5">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
@@ -301,22 +272,21 @@ export default function Home() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <TrendingUp className="h-12 w-12 text-[#14B8A6] mx-auto mb-6" />
             <h2
               className="text-3xl sm:text-4xl font-black mb-4"
               style={{ fontFamily: "var(--font-display)" }}
             >
-              Ready to Bloom?
+              Not Sure Which System Is Right?
             </h2>
             <p className="text-white/60 max-w-2xl mx-auto mb-8 text-lg">
-              Join hundreds of entrepreneurs who are growing their businesses
-              with automation, AI, and scalable systems.
+              Book a free strategy call and we'll map out the fastest path to
+              growth for your specific business.
             </p>
             <a
               href="/get-started"
               className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#14B8A6] text-white font-bold hover:opacity-90 transition-opacity text-lg"
             >
-              Start Your Journey <ArrowRight className="h-5 w-5" />
+              Book Your Free Call <ArrowRight className="h-5 w-5" />
             </a>
           </motion.div>
         </div>
