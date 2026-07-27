@@ -1,6 +1,7 @@
 import { Router } from "express";
 import Stripe from "stripe";
 import { isRecurringPrice, getSuccessPath } from "../shared/servicePricing";
+import { DOMAIN_PRICE_IDS } from "../shared/domainPricing";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2026-05-27.dahlia",
@@ -22,6 +23,21 @@ interface CreateCheckoutBody {
   successPath?: string;
 }
 
+// Set of all domain-related Stripe Price IDs — used to block domain
+// checkout sessions until a real registrar integration is connected.
+const DOMAIN_PRICE_ID_VALUES: ReadonlySet<string> = new Set(
+  Object.values(DOMAIN_PRICE_IDS)
+);
+
+/**
+ * Returns true if the given price ID corresponds to a domain TLD product.
+ * Used to prevent creating Stripe Checkout sessions for domain purchases
+ * until a real domain registrar availability check is connected.
+ */
+function isDomainPriceId(priceId: string): boolean {
+  return DOMAIN_PRICE_ID_VALUES.has(priceId);
+}
+
 /**
  * POST /api/create-checkout
  *
@@ -29,6 +45,9 @@ interface CreateCheckoutBody {
  * Automatically detects recurring vs one-time based on the price ID.
  * customerEmail is optional — Stripe Checkout will collect it if not provided.
  * Returns { sessionId, url } for frontend redirect.
+ *
+ * Domain purchases are temporarily disabled until a real registrar is integrated.
+ * Requests with a domain price ID or a domainName field are rejected with 503.
  *
  * Success/cancel URLs always point to the production domain (businessbloomllc.com).
  */
@@ -50,6 +69,17 @@ checkoutRouter.post("/api/create-checkout", async (req, res) => {
 
     if (!priceId) {
       return res.status(400).json({ error: "priceId is required" });
+    }
+
+    // ── Domain purchase guard ───────────────────────────────────────────
+    // Until a real domain registrar is integrated, refuse to create a
+    // Stripe Checkout session for any domain-typed price ID or any
+    // request that carries a domainName field.
+    if (isDomainPriceId(priceId) || domainName) {
+      return res.status(503).json({
+        error:
+          "Domain registration is temporarily unavailable. Assisted domain registration is being updated. Please check back soon.",
+      });
     }
 
     // Always use the production domain for Stripe redirect URLs.
@@ -114,8 +144,13 @@ checkoutRouter.post("/api/create-checkout", async (req, res) => {
 /**
  * POST /api/check-domain
  *
- * Simulates domain availability check.
- * In production, this would integrate with a domain registrar API.
+ * Domain availability checking is temporarily disabled.
+ * A real registrar API integration (e.g., Namecheap, GoDaddy, Enom) will
+ * be connected in a future phase. Until then, this endpoint always returns
+ * available: false with a professional message so the frontend can display
+ * an appropriate notice to the visitor.
+ *
+ * No simulated (Math.random) availability results are returned.
  */
 checkoutRouter.post("/api/check-domain", async (req, res) => {
   try {
@@ -125,15 +160,12 @@ checkoutRouter.post("/api/check-domain", async (req, res) => {
       return res.status(400).json({ error: "domain is required" });
     }
 
-    // Simulate domain availability check
-    // In production, integrate with a registrar API (e.g., Namecheap, GoDaddy, Enom)
-    const isAvailable = Math.random() > 0.3; // 70% chance available for demo
-    const isPremium = Math.random() > 0.9; // 10% chance premium
-
     return res.json({
       domain,
-      available: isAvailable,
-      isPremium,
+      available: false,
+      disabled: true,
+      message:
+        "Assisted domain registration is being updated. Please check back soon.",
     });
   } catch (error: any) {
     console.error("[Domain Check] Error:", error.message);
