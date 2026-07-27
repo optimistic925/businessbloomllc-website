@@ -14,6 +14,8 @@ import ShopifyApp from "./pages/ShopifyApp";
 import FreeShopifyStore from "./pages/FreeShopifyStore";
 import Resources from "./pages/Resources";
 import GetStarted from "./pages/GetStarted";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 
 function Router() {
   return (
@@ -28,6 +30,8 @@ function Router() {
       <Route path={"/free-shopify-store"} component={FreeShopifyStore} />
       <Route path={"/resources"} component={Resources} />
       <Route path={"/get-started"} component={GetStarted} />
+      <Route path={"/privacy"} component={Privacy} />
+      <Route path={"/terms"} component={Terms} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>
