@@ -1,5 +1,77 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { getDomainPriceId, getDomainTLDInfo, DOMAIN_PRICE_IDS, DOMAIN_TLD_PRICING } from "../shared/domainPricing";
+
+// ── Mock Stripe SDK to avoid requiring STRIPE_SECRET_KEY in CI ──────────
+// The Stripe constructor throws "Neither apiKey nor config.authenticator
+// provided" when instantiated with an empty string.  In CI, STRIPE_SECRET_KEY
+// is not available, so we replace the "stripe" module with a minimal mock.
+// The unit tests below only exercise validation guards (400 / 403 / 503)
+// that return before any real Stripe API call is made, so the mock's
+// sessions.create is never invoked.
+vi.mock("stripe", () => {
+  const MockStripe = vi.fn().mockImplementation(() => ({
+    checkout: {
+      sessions: {
+        create: vi.fn().mockResolvedValue({ id: "cs_test_mock", url: "https://example.com" }),
+      },
+    },
+    webhooks: {
+      constructEvent: vi.fn().mockReturnValue({ id: "evt_test_mock", type: "checkout.session.completed" }),
+    },
+  }));
+  return { default: MockStripe };
+});
+
+// ── Lightweight Express HTTP test helper (no supertest dependency) ──────
+// supertest is not installed in this project.  Instead, we mount the router
+// on an Express app and use Node's http module to make real requests against
+// an ephemeral server.
+async function requestApp(
+  app: Express.Application,
+  method: string,
+  path: string,
+  body?: unknown,
+): Promise<{ status: number; body: any }> {
+  const http = await import("http");
+  return new Promise((resolve, reject) => {
+    const server = app.listen(0, () => {
+      const port = (server.address() as any).port;
+      const data = body ? JSON.stringify(body) : null;
+      const req = http.request(
+        {
+          hostname: "127.0.0.1",
+          port,
+          path,
+          method: method.toUpperCase(),
+          headers: {
+            "Content-Type": "application/json",
+            ...(data ? { "Content-Length": Buffer.byteLength(data) } : {}),
+          },
+        },
+        (res) => {
+          let buf = "";
+          res.on("data", (chunk) => (buf += chunk));
+          res.on("end", () => {
+            server.close();
+            let parsed: any;
+            try {
+              parsed = JSON.parse(buf);
+            } catch {
+              parsed = buf;
+            }
+            resolve({ status: res.statusCode ?? 0, body: parsed });
+          });
+        },
+      );
+      req.on("error", (err) => {
+        server.close();
+        reject(err);
+      });
+      if (data) req.write(data);
+      req.end();
+    });
+  });
+}
 
 describe("Domain Pricing Config", () => {
   it("has price IDs for all 6 TLDs", () => {
@@ -66,69 +138,44 @@ describe("Checkout Endpoint (unit)", () => {
   it("POST /api/create-checkout returns 400 when priceId is missing", async () => {
     const { checkoutRouter } = await import("./checkout");
     const express = (await import("express")).default;
-    const request = (await import("supertest")).default;
     const app = express();
     app.use(express.json());
     app.use(checkoutRouter);
 
-    const res = await request(app).post("/api/create-checkout").send({
+    const res = await requestApp(app, "POST", "/api/create-checkout", {
       customerEmail: "test@example.com",
     });
     expect(res.status).toBe(400);
     expect(res.body.error).toBe("priceId is required");
   });
 
-  it("POST /api/create-checkout returns 400 when customerEmail is missing", async () => {
+  it("POST /api/create-checkout returns 403 for domain price IDs (checkout blocked)", async () => {
     const { checkoutRouter } = await import("./checkout");
     const express = (await import("express")).default;
-    const request = (await import("supertest")).default;
     const app = express();
     app.use(express.json());
     app.use(checkoutRouter);
 
-    const res = await request(app).post("/api/create-checkout").send({
+    const res = await requestApp(app, "POST", "/api/create-checkout", {
       priceId: "price_1TduLIIVlv7TZiKSoYRzm8h9",
+      customerEmail: "test@example.com",
     });
-    expect(res.status).toBe(400);
-    expect(res.body.error).toBe("customerEmail is required");
+    expect(res.status).toBe(403);
+    expect(res.body.error).toContain("Domain registration is temporarily unavailable");
   });
 
-  it("POST /api/check-domain returns 400 when domain is missing", async () => {
+  it("POST /api/check-domain returns 503 (domain check disabled)", async () => {
     const { checkoutRouter } = await import("./checkout");
     const express = (await import("express")).default;
-    const request = (await import("supertest")).default;
     const app = express();
     app.use(express.json());
     app.use(checkoutRouter);
 
-    const res = await request(app).post("/api/check-domain").send({});
-    expect(res.status).toBe(400);
-    expect(res.body.error).toBe("domain is required");
-  });
-
-  it("POST /api/create-checkout creates a live Stripe checkout session with domain metadata", async () => {
-    const { checkoutRouter } = await import("./checkout");
-    const express = (await import("express")).default;
-    const request = (await import("supertest")).default;
-    const app = express();
-    app.use(express.json());
-    app.use(checkoutRouter);
-
-    const res = await request(app).post("/api/create-checkout").send({
-      priceId: "price_1TduLIIVlv7TZiKSoYRzm8h9",
-      customerEmail: "test@businessbloomllc.com",
-      customerName: "Test User",
-      domainName: "testdomain.com",
+    const res = await requestApp(app, "POST", "/api/check-domain", {
+      domain: "example.com",
     });
-
-    // This test requires STRIPE_SECRET_KEY env var to be set with a valid key
-    if (res.status === 200) {
-      expect(res.body).toHaveProperty("sessionId");
-      expect(res.body).toHaveProperty("url");
-      expect(res.body.url).toContain("stripe.com");
-    } else {
-      // If no Stripe key is configured in the test environment, expect a 500
-      expect(res.status).toBe(500);
-    }
+    expect(res.status).toBe(503);
+    expect(res.body.disabled).toBe(true);
+    expect(res.body.available).toBe(false);
   });
 });

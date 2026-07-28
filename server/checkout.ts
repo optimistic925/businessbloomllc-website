@@ -1,12 +1,22 @@
 import { Router } from "express";
 import Stripe from "stripe";
 import { isRecurringPrice, getSuccessPath } from "../shared/servicePricing";
+import { DOMAIN_PRICE_IDS } from "../shared/domainPricing";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2026-05-27.dahlia",
 });
 
 export const checkoutRouter = Router();
+
+/** Set of all domain-related Stripe Price IDs — checkout for these is disabled. */
+const DISABLED_DOMAIN_PRICE_IDS = new Set<string>(
+  Object.values(DOMAIN_PRICE_IDS)
+);
+
+function isDomainPriceId(priceId: string): boolean {
+  return DISABLED_DOMAIN_PRICE_IDS.has(priceId);
+}
 
 interface CreateCheckoutBody {
   priceId: string;
@@ -30,6 +40,8 @@ interface CreateCheckoutBody {
  * customerEmail is optional — Stripe Checkout will collect it if not provided.
  * Returns { sessionId, url } for frontend redirect.
  *
+ * Domain checkout is BLOCKED until a real registrar API is connected.
+ *
  * Success/cancel URLs always point to the production domain (businessbloomllc.com).
  */
 checkoutRouter.post("/api/create-checkout", async (req, res) => {
@@ -50,6 +62,17 @@ checkoutRouter.post("/api/create-checkout", async (req, res) => {
 
     if (!priceId) {
       return res.status(400).json({ error: "priceId is required" });
+    }
+
+    // ── Domain purchase guard ──────────────────────────────────────────
+    // Do NOT create a Stripe checkout session for any domain price ID.
+    // Domain availability cannot be verified without a real registrar API.
+    // This prevents users from paying for domains that may not be registrable.
+    if (isDomainPriceId(priceId)) {
+      return res.status(403).json({
+        error:
+          "Domain registration is temporarily unavailable. We are updating our domain registration system. Please check back soon.",
+      });
     }
 
     // Always use the production domain for Stripe redirect URLs.
@@ -114,31 +137,20 @@ checkoutRouter.post("/api/create-checkout", async (req, res) => {
 /**
  * POST /api/check-domain
  *
- * Simulates domain availability check.
- * In production, this would integrate with a domain registrar API.
+ * Domain availability checking is temporarily disabled.
+ * The previous implementation used Math.random() to simulate availability,
+ * which could lead to customers paying for domains that are not registrable.
+ *
+ * A real registrar API integration is required before this endpoint can
+ * return actual availability results.
  */
-checkoutRouter.post("/api/check-domain", async (req, res) => {
-  try {
-    const { domain } = req.body as { domain: string };
-
-    if (!domain) {
-      return res.status(400).json({ error: "domain is required" });
-    }
-
-    // Simulate domain availability check
-    // In production, integrate with a registrar API (e.g., Namecheap, GoDaddy, Enom)
-    const isAvailable = Math.random() > 0.3; // 70% chance available for demo
-    const isPremium = Math.random() > 0.9; // 10% chance premium
-
-    return res.json({
-      domain,
-      available: isAvailable,
-      isPremium,
-    });
-  } catch (error: any) {
-    console.error("[Domain Check] Error:", error.message);
-    return res.status(500).json({ error: "Failed to check domain availability" });
-  }
+checkoutRouter.post("/api/check-domain", async (_req, res) => {
+  return res.status(503).json({
+    available: false,
+    disabled: true,
+    message:
+      "Domain availability checking is temporarily unavailable. We are updating our domain registration system. Please check back soon.",
+  });
 });
 
 /**
