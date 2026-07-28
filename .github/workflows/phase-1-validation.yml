@@ -22,26 +22,8 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Set up pnpm 10.4.1
-        uses: pnpm/action-setup@v4
-        with:
-          version: "10.4.1"
-          run_install: false
-
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Cache pnpm dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ${{ env.STORE_PATH }}
-            node_modules
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml', '**/patches/**') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-
+      - name: Enable pnpm via corepack
+        run: corepack enable && corepack prepare pnpm@10.4.1 --activate
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
