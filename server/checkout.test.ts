@@ -78,7 +78,7 @@ describe("Checkout Endpoint (unit)", () => {
     expect(res.body.error).toBe("priceId is required");
   });
 
-  it("POST /api/create-checkout returns 400 when customerEmail is missing", async () => {
+  it("POST /api/create-checkout returns 403 for domain price IDs (checkout blocked)", async () => {
     const { checkoutRouter } = await import("./checkout");
     const express = (await import("express")).default;
     const request = (await import("supertest")).default;
@@ -88,12 +88,13 @@ describe("Checkout Endpoint (unit)", () => {
 
     const res = await request(app).post("/api/create-checkout").send({
       priceId: "price_1TduLIIVlv7TZiKSoYRzm8h9",
+      customerEmail: "test@example.com",
     });
-    expect(res.status).toBe(400);
-    expect(res.body.error).toBe("customerEmail is required");
+    expect(res.status).toBe(403);
+    expect(res.body.error).toContain("Domain registration is temporarily unavailable");
   });
 
-  it("POST /api/check-domain returns 400 when domain is missing", async () => {
+  it("POST /api/check-domain returns 503 (domain check disabled)", async () => {
     const { checkoutRouter } = await import("./checkout");
     const express = (await import("express")).default;
     const request = (await import("supertest")).default;
@@ -101,34 +102,11 @@ describe("Checkout Endpoint (unit)", () => {
     app.use(express.json());
     app.use(checkoutRouter);
 
-    const res = await request(app).post("/api/check-domain").send({});
-    expect(res.status).toBe(400);
-    expect(res.body.error).toBe("domain is required");
-  });
-
-  it("POST /api/create-checkout creates a live Stripe checkout session with domain metadata", async () => {
-    const { checkoutRouter } = await import("./checkout");
-    const express = (await import("express")).default;
-    const request = (await import("supertest")).default;
-    const app = express();
-    app.use(express.json());
-    app.use(checkoutRouter);
-
-    const res = await request(app).post("/api/create-checkout").send({
-      priceId: "price_1TduLIIVlv7TZiKSoYRzm8h9",
-      customerEmail: "test@businessbloomllc.com",
-      customerName: "Test User",
-      domainName: "testdomain.com",
+    const res = await request(app).post("/api/check-domain").send({
+      domain: "example.com",
     });
-
-    // This test requires STRIPE_SECRET_KEY env var to be set with a valid key
-    if (res.status === 200) {
-      expect(res.body).toHaveProperty("sessionId");
-      expect(res.body).toHaveProperty("url");
-      expect(res.body.url).toContain("stripe.com");
-    } else {
-      // If no Stripe key is configured in the test environment, expect a 500
-      expect(res.status).toBe(500);
-    }
+    expect(res.status).toBe(503);
+    expect(res.body.disabled).toBe(true);
+    expect(res.body.available).toBe(false);
   });
 });
