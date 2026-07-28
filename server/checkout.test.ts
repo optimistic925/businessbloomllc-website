@@ -22,6 +22,57 @@ vi.mock("stripe", () => {
   return { default: MockStripe };
 });
 
+// ── Lightweight Express HTTP test helper (no supertest dependency) ──────
+// supertest is not installed in this project.  Instead, we mount the router
+// on an Express app and use Node's http module to make real requests against
+// an ephemeral server.
+async function requestApp(
+  app: Express.Application,
+  method: string,
+  path: string,
+  body?: unknown,
+): Promise<{ status: number; body: any }> {
+  const http = await import("http");
+  return new Promise((resolve, reject) => {
+    const server = app.listen(0, () => {
+      const port = (server.address() as any).port;
+      const data = body ? JSON.stringify(body) : null;
+      const req = http.request(
+        {
+          hostname: "127.0.0.1",
+          port,
+          path,
+          method: method.toUpperCase(),
+          headers: {
+            "Content-Type": "application/json",
+            ...(data ? { "Content-Length": Buffer.byteLength(data) } : {}),
+          },
+        },
+        (res) => {
+          let buf = "";
+          res.on("data", (chunk) => (buf += chunk));
+          res.on("end", () => {
+            server.close();
+            let parsed: any;
+            try {
+              parsed = JSON.parse(buf);
+            } catch {
+              parsed = buf;
+            }
+            resolve({ status: res.statusCode ?? 0, body: parsed });
+          });
+        },
+      );
+      req.on("error", (err) => {
+        server.close();
+        reject(err);
+      });
+      if (data) req.write(data);
+      req.end();
+    });
+  });
+}
+
 describe("Domain Pricing Config", () => {
   it("has price IDs for all 6 TLDs", () => {
     expect(Object.keys(DOMAIN_PRICE_IDS)).toHaveLength(6);
@@ -87,12 +138,11 @@ describe("Checkout Endpoint (unit)", () => {
   it("POST /api/create-checkout returns 400 when priceId is missing", async () => {
     const { checkoutRouter } = await import("./checkout");
     const express = (await import("express")).default;
-    const request = (await import("supertest")).default;
     const app = express();
     app.use(express.json());
     app.use(checkoutRouter);
 
-    const res = await request(app).post("/api/create-checkout").send({
+    const res = await requestApp(app, "POST", "/api/create-checkout", {
       customerEmail: "test@example.com",
     });
     expect(res.status).toBe(400);
@@ -102,12 +152,11 @@ describe("Checkout Endpoint (unit)", () => {
   it("POST /api/create-checkout returns 403 for domain price IDs (checkout blocked)", async () => {
     const { checkoutRouter } = await import("./checkout");
     const express = (await import("express")).default;
-    const request = (await import("supertest")).default;
     const app = express();
     app.use(express.json());
     app.use(checkoutRouter);
 
-    const res = await request(app).post("/api/create-checkout").send({
+    const res = await requestApp(app, "POST", "/api/create-checkout", {
       priceId: "price_1TduLIIVlv7TZiKSoYRzm8h9",
       customerEmail: "test@example.com",
     });
@@ -118,12 +167,11 @@ describe("Checkout Endpoint (unit)", () => {
   it("POST /api/check-domain returns 503 (domain check disabled)", async () => {
     const { checkoutRouter } = await import("./checkout");
     const express = (await import("express")).default;
-    const request = (await import("supertest")).default;
     const app = express();
     app.use(express.json());
     app.use(checkoutRouter);
 
-    const res = await request(app).post("/api/check-domain").send({
+    const res = await requestApp(app, "POST", "/api/check-domain", {
       domain: "example.com",
     });
     expect(res.status).toBe(503);
