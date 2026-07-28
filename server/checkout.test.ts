@@ -1,5 +1,26 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { getDomainPriceId, getDomainTLDInfo, DOMAIN_PRICE_IDS, DOMAIN_TLD_PRICING } from "../shared/domainPricing";
+
+// ── Mock Stripe SDK to avoid requiring STRIPE_SECRET_KEY in CI ──────────
+// The Stripe constructor throws "Neither apiKey nor config.authenticator
+// provided" when instantiated with an empty string.  In CI, STRIPE_SECRET_KEY
+// is not available, so we replace the "stripe" module with a minimal mock.
+// The unit tests below only exercise validation guards (400 / 403 / 503)
+// that return before any real Stripe API call is made, so the mock's
+// sessions.create is never invoked.
+vi.mock("stripe", () => {
+  const MockStripe = vi.fn().mockImplementation(() => ({
+    checkout: {
+      sessions: {
+        create: vi.fn().mockResolvedValue({ id: "cs_test_mock", url: "https://example.com" }),
+      },
+    },
+    webhooks: {
+      constructEvent: vi.fn().mockReturnValue({ id: "evt_test_mock", type: "checkout.session.completed" }),
+    },
+  }));
+  return { default: MockStripe };
+});
 
 describe("Domain Pricing Config", () => {
   it("has price IDs for all 6 TLDs", () => {
