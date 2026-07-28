@@ -84,6 +84,14 @@ export default function NavBar() {
               >
                 Get Started
               </a>
+              <a
+                href="https://app.businessbloomllc.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 text-sm font-medium text-[#14B8A6] border border-[#14B8A6]/30 rounded-lg hover:bg-[#14B8A6]/10 transition-colors text-center"
+              >
+                Open Business Bloom Engine
+              </a>
             </div>
           </nav>
         </div>
