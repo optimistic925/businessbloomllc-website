@@ -6,11 +6,12 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import Domains from "./pages/Domains";
-import Solutions from "./pages/Solutions";
+import Marketplace from "./pages/Marketplace";
 import PromptPacks from "./pages/PromptPacks";
 import DfyServices from "./pages/DfyServices";
 import Hosting from "./pages/Hosting";
 import ShopifyApp from "./pages/ShopifyApp";
+import FreeStore from "./pages/FreeStore";
 import FreeShopifyStore from "./pages/FreeShopifyStore";
 import Resources from "./pages/Resources";
 import GetStarted from "./pages/GetStarted";
@@ -21,8 +22,10 @@ function Router() {
   return (
     <Switch>
       <Route path={"/"} component={Home} />
-      <Route path={"/solutions"} component={Solutions} />
+      <Route path={"/marketplace"} component={Marketplace} />
+      <Route path={"/solutions"} component={Marketplace} />
       <Route path={"/prompt-packs"} component={PromptPacks} />
+      <Route path={"/free-store"} component={FreeStore} />
       <Route path={"/dfy-services"} component={DfyServices} />
       <Route path={"/hosting"} component={Hosting} />
       <Route path={"/domains"} component={Domains} />
