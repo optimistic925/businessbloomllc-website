@@ -3,13 +3,12 @@ import { Menu, X } from "lucide-react";
 
 const navLinks = [
   { label: "Home", href: "/" },
-  { label: "Solutions", href: "/solutions" },
-  { label: "Prompt Packs", href: "/prompt-packs" },
-  { label: "DFY Services", href: "/dfy-services" },
+  { label: "Agent Marketplace", href: "/marketplace" },
+  { label: "Prompts", href: "/prompt-packs" },
+  { label: "Free Store", href: "/free-store" },
+  { label: "Shopify App", href: "/shopify-app" },
   { label: "Hosting", href: "/hosting" },
   { label: "Domains", href: "/domains" },
-  { label: "Shopify App", href: "/shopify-app" },
-  { label: "Free Store", href: "/free-shopify-store" },
   { label: "Resources", href: "/resources" },
 ];
 
@@ -20,78 +19,32 @@ export default function NavBar() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-[#0B0F1A]/90 backdrop-blur-md border-b border-white/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <a href="/" className="flex items-center gap-2 text-white font-bold text-lg">
-            Business Bloom
-          </a>
-
-          {/* Desktop nav */}
-          <nav className="hidden lg:flex items-center gap-1">
+          <a href="/" className="flex items-center gap-2 text-white font-bold text-lg">Business Bloom</a>
+          <nav className="hidden xl:flex items-center gap-1" aria-label="Main navigation">
             {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                className="px-3 py-2 text-sm text-white/70 hover:text-white transition-colors rounded-lg hover:bg-white/5"
-              >
+              <a key={link.href} href={link.href} className="px-2.5 py-2 text-sm text-white/70 hover:text-white transition-colors rounded-lg hover:bg-white/5">
                 {link.label}
               </a>
             ))}
           </nav>
-
-          <div className="hidden lg:flex items-center gap-3">
-            <a
-              href="/get-started"
-              className="px-4 py-2 text-sm font-medium text-white bg-[#7C3AED] rounded-lg hover:bg-[#6D2FDD] transition-colors"
-            >
-              Get Started
-            </a>
-            <a
-              href="https://app.businessbloomllc.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-4 py-2 text-sm font-medium text-[#14B8A6] border border-[#14B8A6]/30 rounded-lg hover:bg-[#14B8A6]/10 transition-colors"
-            >
-              Open Business Bloom Engine
-            </a>
+          <div className="hidden xl:flex items-center gap-2">
+            <a href="/get-started" className="px-4 py-2 text-sm font-medium text-white bg-[#7C3AED] rounded-lg hover:bg-[#6D2FDD] transition-colors">Get Started</a>
+            <a href="https://app.businessbloomllc.com/" target="_blank" rel="noopener noreferrer" className="px-4 py-2 text-sm font-medium text-[#14B8A6] border border-[#14B8A6]/30 rounded-lg hover:bg-[#14B8A6]/10 transition-colors">Open Engine</a>
           </div>
-
-          {/* Mobile menu button */}
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="lg:hidden p-2 text-white/70 hover:text-white"
-          >
+          <button onClick={() => setMobileOpen(!mobileOpen)} className="xl:hidden p-2 text-white/70 hover:text-white" aria-label={mobileOpen ? "Close navigation" : "Open navigation"} aria-expanded={mobileOpen}>
             {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
       </div>
-
-      {/* Mobile nav */}
       {mobileOpen && (
-        <div className="lg:hidden bg-[#0B0F1A] border-t border-white/5 py-4">
-          <nav className="flex flex-col px-4 gap-1">
+        <div className="xl:hidden bg-[#0B0F1A] border-t border-white/5 py-4">
+          <nav className="flex flex-col px-4 gap-1" aria-label="Mobile navigation">
             {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                className="px-3 py-2 text-sm text-white/70 hover:text-white transition-colors rounded-lg hover:bg-white/5"
-              >
-                {link.label}
-              </a>
+              <a key={link.href} href={link.href} onClick={() => setMobileOpen(false)} className="px-3 py-2 text-sm text-white/70 hover:text-white rounded-lg hover:bg-white/5">{link.label}</a>
             ))}
             <div className="mt-4 flex flex-col gap-2">
-              <a
-                href="/get-started"
-                className="px-4 py-2 text-sm font-medium text-white bg-[#7C3AED] rounded-lg hover:bg-[#6D2FDD] transition-colors text-center"
-              >
-                Get Started
-              </a>
-              <a
-                href="https://app.businessbloomllc.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-4 py-2 text-sm font-medium text-[#14B8A6] border border-[#14B8A6]/30 rounded-lg hover:bg-[#14B8A6]/10 transition-colors text-center"
-              >
-                Open Business Bloom Engine
-              </a>
+              <a href="/get-started" className="px-4 py-2 text-sm font-medium text-white bg-[#7C3AED] rounded-lg text-center">Get Started</a>
+              <a href="https://app.businessbloomllc.com/" target="_blank" rel="noopener noreferrer" className="px-4 py-2 text-sm font-medium text-[#14B8A6] border border-[#14B8A6]/30 rounded-lg text-center">Open Business Bloom Engine</a>
             </div>
           </nav>
         </div>
