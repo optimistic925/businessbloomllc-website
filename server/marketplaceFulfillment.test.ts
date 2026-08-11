@@ -64,4 +64,15 @@ describe("Marketplace server-trusted fulfillment configuration", () => {
     const destination = getMarketplaceFulfillmentDestination(product.slug);
     expect(destination).toEqual({ downloadUrl: null, accessUrl: null, nextStepUrl: null });
   });
+
+  it("keeps the current 13-product launch catalog aligned to its approved download fulfillment model", () => {
+    expect(MARKETPLACE_PRODUCTS).toHaveLength(13);
+
+    for (const product of MARKETPLACE_PRODUCTS) {
+      expect(product.fulfillmentType, product.slug).toBe("download");
+      expect(product.requiresDigitalDelivery, product.slug).toBe(true);
+      expect(product.requiresAccessInstructions, product.slug).toBe(false);
+      expect(product.requiresOnboarding, product.slug).toBe(false);
+    }
+  });
 });
