@@ -19,8 +19,8 @@ export interface MarketplaceCommercialConfig {
  * in shared/marketplaceProducts.ts. This file owns approved commercial values only so prices
  * and Stripe IDs are not duplicated across UI and server components.
  *
- * Sales System is intentionally absent until final production confirmation and Pricing Council
- * bundle-economics recalculation are complete.
+ * Sales System commercial terms are approved and implemented here, but the product must not
+ * enter the active Marketplace catalog until protected delivery and final QA are ready.
  */
 export const MARKETPLACE_COMMERCIAL_CONFIG: Record<string, MarketplaceCommercialConfig> = {
   "business-bloom-customer-service-system": {
@@ -78,14 +78,25 @@ export const MARKETPLACE_COMMERCIAL_CONFIG: Record<string, MarketplaceCommercial
     billingModel: "ONE_TIME",
     ownerApprovalStatus: "APPROVED",
   },
+  "business-bloom-sales-system": {
+    slug: "business-bloom-sales-system",
+    regularPriceCents: 29700,
+    launchPriceCents: 24700,
+    priceDisplay: "$297",
+    launchPriceDisplay: "$247",
+    stripeProductId: "prod_V3S4ynv7a8w5Jm",
+    stripePriceId: "price_1U3LAZIVlv7TZiKSd8R55REH",
+    billingModel: "ONE_TIME",
+    ownerApprovalStatus: "APPROVED",
+  },
   "business-bloom-professional-systems": {
     slug: "business-bloom-professional-systems",
-    regularPriceCents: 119700,
+    regularPriceCents: 139700,
     launchPriceCents: null,
-    priceDisplay: "$1,197",
+    priceDisplay: "$1,397",
     launchPriceDisplay: null,
     stripeProductId: "prod_V3EFnvMkvXsSEe",
-    stripePriceId: "price_1U37msIVlv7TZiKSklWQ70rC",
+    stripePriceId: "price_1U3LAsIVlv7TZiKS50h40Bnc",
     billingModel: "ONE_TIME",
     ownerApprovalStatus: "APPROVED",
   },
@@ -184,6 +195,7 @@ export const PROFESSIONAL_SYSTEM_COMPONENT_SLUGS = [
   "business-bloom-marketing-system",
   "business-bloom-operations-system",
   "business-bloom-ai-automation-bundles",
+  "business-bloom-sales-system",
 ] as const;
 
 export function getProfessionalSystemsBundleEconomics() {
