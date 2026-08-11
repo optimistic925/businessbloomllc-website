@@ -11,7 +11,7 @@ export const ADDITIONAL_FINALIZED_FREE_RESOURCES = [
   { slug: "offer-clarity-worksheet", name: "Offer Clarity Worksheet", category: "Business Foundations", format: "Fillable PDF" },
   { slug: "brand-message-quick-check", name: "Brand Message Quick Check", category: "Branding", format: "Fillable PDF" },
   { slug: "website-conversion-checklist", name: "Website Conversion Checklist", category: "Website", format: "Fillable PDF" },
-  { slug: "social-content-consistency-planner", name: "Social Content Consistency Planner", category: "Marketing", format: "Spreadsheet Planner" },
+  { slug: "social-content-consistency-planner", name: "Social Content Consistency Planner", category: "Marketing", format: "Spreadsheet" },
 ] as const;
 
 Object.assign(FREE_RESOURCE_DELIVERY_CONFIG, {
@@ -48,7 +48,7 @@ Object.assign(FREE_RESOURCE_DELIVERY_CONFIG, {
     ctaLabel: "Download Free",
     relatedPaidProductSlug: "business-bloom-social-media-system",
     relatedPaidProductName: "Business Bloom Social Media System",
-    deliveryUrl: "/downloads/free-resources/Business-Bloom-Social-Content-Consistency-Planner.csv",
+    deliveryUrl: "/downloads/free-resources/Business-Bloom-Social-Content-Consistency-Planner.xlsx",
     deliveryStatus: "READY",
   },
 });
