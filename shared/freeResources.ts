@@ -48,7 +48,7 @@ Object.assign(FREE_RESOURCE_DELIVERY_CONFIG, {
     ctaLabel: "Download Free",
     relatedPaidProductSlug: "business-bloom-social-media-system",
     relatedPaidProductName: "Business Bloom Social Media System",
-    deliveryUrl: "/downloads/free-resources/Business-Bloom-Social-Content-Consistency-Planner.xlsx",
+    deliveryUrl: "/downloads/free-resources/Business-Bloom-Social-Content-Consistency-Planner.csv",
     deliveryStatus: "READY",
   },
 });
