@@ -1,7 +1,7 @@
 import { ArrowRight, Bot, BriefcaseBusiness, CheckCircle2, Gift, Layers3, Rocket, ShoppingBag } from "lucide-react";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
-import { MARKETPLACE_PRODUCTS } from "../../../shared/marketplaceProducts";
+import { PUBLIC_MARKETPLACE_PRODUCTS } from "../../../shared/marketplacePublicCatalog";
 import { getMarketplaceCommercialConfig } from "../../../shared/marketplaceCommercialConfig";
 
 const solutions = [
@@ -20,7 +20,7 @@ const featuredSlugs = [
 ];
 
 export default function Home() {
-  const featured = featuredSlugs.map((slug) => MARKETPLACE_PRODUCTS.find((product) => product.slug === slug)).filter(Boolean);
+  const featured = featuredSlugs.map((slug) => PUBLIC_MARKETPLACE_PRODUCTS.find((product) => product.slug === slug)).filter(Boolean);
   return (
     <div className="min-h-screen bg-[#0B0F1A] text-white overflow-x-hidden">
       <NavBar />
