@@ -1,7 +1,7 @@
 import { ArrowRight, FileSpreadsheet, FileText, Gift, LockKeyhole } from "lucide-react";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
-import { PUBLIC_FREE_RESOURCES } from "../../../shared/marketplacePublicCatalog";
+import { ALL_PUBLIC_FREE_RESOURCES } from "../../../shared/freeResources";
 import { getFreeResourceDeliveryConfig } from "../../../shared/freeResourceDeliveryConfig";
 
 function formatIcon(format: string) {
@@ -17,19 +17,19 @@ export default function Resources() {
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#F59E0B]/30 bg-[#F59E0B]/10 text-[#F8C866] text-sm font-semibold"><Gift className="h-4 w-4" /> BUSINESS BLOOM FREE RESOURCES</span>
             <h1 className="mt-7 text-4xl sm:text-5xl lg:text-6xl font-black leading-tight" style={{ fontFamily: "var(--font-display)" }}>Useful business tools before you buy a system.</h1>
-            <p className="mt-6 text-lg sm:text-xl text-white/60 max-w-3xl mx-auto leading-relaxed">Use a finalized Business Bloom diagnostic, checklist, or planning resource to clarify the problem and identify a practical next step. Only verified current resources are shown here.</p>
+            <p className="mt-6 text-lg sm:text-xl text-white/60 max-w-3xl mx-auto leading-relaxed">Use a finalized Business Bloom diagnostic, checklist, calculator, scorecard, or planning resource to clarify the problem and identify a practical next step. Only verified current resources are shown here.</p>
           </div>
         </section>
 
         <section className="py-20">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
-              <div><p className="text-[#14B8A6] text-sm font-bold uppercase tracking-wider">Current finalized resources</p><h2 className="mt-2 text-3xl font-black">{PUBLIC_FREE_RESOURCES.length} verified resources</h2></div>
+              <div><p className="text-[#14B8A6] text-sm font-bold uppercase tracking-wider">Current finalized resources</p><h2 className="mt-2 text-3xl font-black">{ALL_PUBLIC_FREE_RESOURCES.length} verified resources</h2></div>
               <p className="text-sm text-white/40">The broader approved library remains in production; incomplete resources are not published.</p>
             </div>
 
             <div className="grid md:grid-cols-3 gap-6">
-              {PUBLIC_FREE_RESOURCES.map((resource) => {
+              {ALL_PUBLIC_FREE_RESOURCES.map((resource) => {
                 const delivery = getFreeResourceDeliveryConfig(resource.slug);
                 const Icon = formatIcon(resource.format);
                 const ready = delivery?.deliveryStatus === "READY" && Boolean(delivery.deliveryUrl);
