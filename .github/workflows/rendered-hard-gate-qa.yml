@@ -18,8 +18,15 @@ jobs:
       - run: pnpm build
       - name: Install rendered QA tooling
         run: |
-          npm install --no-save --package-lock=false playwright@1.55.0 axe-core@4.10.3
-          npx playwright install --with-deps chromium
+          mkdir -p /tmp/business-bloom-rendered-qa
+          cd /tmp/business-bloom-rendered-qa
+          npm init -y >/dev/null 2>&1
+          npm install --package-lock=false playwright@1.55.0 axe-core@4.10.3
+          ./node_modules/.bin/playwright install --with-deps chromium
+          cd "$GITHUB_WORKSPACE"
+          ln -s /tmp/business-bloom-rendered-qa/node_modules/playwright node_modules/playwright
+          ln -s /tmp/business-bloom-rendered-qa/node_modules/playwright-core node_modules/playwright-core
+          ln -s /tmp/business-bloom-rendered-qa/node_modules/axe-core node_modules/axe-core
       - name: Start local built SPA
         run: |
           mkdir -p qa-artifacts
