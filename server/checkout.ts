@@ -191,6 +191,3 @@ checkoutRouter.post("/api/stripe/webhook", async (req, res) => {
 
   return res.json({ received: true });
 });
-
-return res.json({ received: true });
-});
