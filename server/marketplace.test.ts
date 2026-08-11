@@ -1,5 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
-import { MARKETPLACE_PRODUCTS, getMarketplaceProduct, productCheckoutReady } from "../shared/marketplaceProducts";
+import {
+  APPROVED_FREE_RESOURCES,
+  FREE_RESOURCE_EXPECTED_COUNT,
+  LEGACY_STRIPE_ONLY_PRODUCTS_EXCLUDED,
+  MARKETPLACE_PRODUCTS,
+  MARKETPLACE_PRODUCTS_IN_PRODUCTION,
+  getMarketplaceProduct,
+  productCheckoutReady,
+} from "../shared/marketplaceProducts";
 
 vi.mock("stripe", () => {
   const create = vi.fn().mockResolvedValue({ id: "cs_test_marketplace", url: "https://checkout.stripe.com/test" });
@@ -23,20 +31,47 @@ async function requestApp(app: import("express").Application, body: unknown) {
   });
 }
 
-describe("Marketplace product registry", () => {
-  it("uses unique slugs and Stripe price IDs", () => {
-    const slugs = MARKETPLACE_PRODUCTS.map((p) => p.slug);
-    const prices = MARKETPLACE_PRODUCTS.map((p) => p.stripePriceId).filter(Boolean);
-    expect(new Set(slugs).size).toBe(slugs.length);
-    expect(new Set(prices).size).toBe(prices.length);
+describe("Marketplace Drive-first product registry", () => {
+  it("contains only current approved paid products in the public paid catalog", () => {
+    expect(MARKETPLACE_PRODUCTS).toHaveLength(13);
+    expect(MARKETPLACE_PRODUCTS.every((product) => product.catalogStatus === "CURRENT_APPROVED_PRODUCT")).toBe(true);
+    expect(MARKETPLACE_PRODUCTS.every((product) => product.freeOrPaid === "PAID")).toBe(true);
   });
 
-  it("does not report checkout ready when a required destination is missing", () => {
+  it("uses unique public product slugs", () => {
+    const slugs = MARKETPLACE_PRODUCTS.map((product) => product.slug);
+    expect(new Set(slugs).size).toBe(slugs.length);
+  });
+
+  it("does not attach legacy Stripe IDs to current Drive products", () => {
+    expect(MARKETPLACE_PRODUCTS.every((product) => product.stripeProductId === null)).toBe(true);
+    expect(MARKETPLACE_PRODUCTS.every((product) => product.stripePriceId === null)).toBe(true);
+    expect(MARKETPLACE_PRODUCTS.every((product) => product.stripeMatchStatus === "STRIPE_PRODUCT_REQUIRED")).toBe(true);
+  });
+
+  it("keeps previously Stripe-first products out of active display", () => {
+    const activeNames = new Set(MARKETPLACE_PRODUCTS.map((product) => product.name));
+    for (const legacyName of LEGACY_STRIPE_ONLY_PRODUCTS_EXCLUDED) expect(activeNames.has(legacyName)).toBe(false);
+  });
+
+  it("keeps the Sales System mapped as production rather than public", () => {
+    expect(MARKETPLACE_PRODUCTS_IN_PRODUCTION.some((product) => product.slug === "business-bloom-sales-system")).toBe(true);
+    expect(getMarketplaceProduct("business-bloom-sales-system")).toBeNull();
+  });
+
+  it("records the incomplete 13-resource library without inventing files", () => {
+    expect(FREE_RESOURCE_EXPECTED_COUNT).toBe(13);
+    expect(APPROVED_FREE_RESOURCES).toHaveLength(3);
+  });
+
+  it("does not report checkout ready while Stripe or public delivery is missing", () => {
     for (const product of MARKETPLACE_PRODUCTS) expect(productCheckoutReady(product)).toBe(false);
   });
 
-  it("resolves a verified marketplace product by slug", () => {
-    expect(getMarketplaceProduct("prompt-pack-starter")?.stripePriceId).toBe("price_1Tec5xIVlv7TZiKSq1eJjfdQ");
+  it("resolves the current Virtual Executive Team product by slug", () => {
+    const product = getMarketplaceProduct("business-bloom-virtual-executive-team");
+    expect(product?.sourceFolderId).toBe("1A-yX_eACGZ-aVtJU7XvAbl8TisZuHXaR");
+    expect(product?.stripeProductId).toBeNull();
   });
 });
 
@@ -49,11 +84,11 @@ describe("Marketplace checkout safety gate", () => {
     expect(response.status).toBe(404);
   });
 
-  it("blocks checkout until required fulfillment configuration exists", async () => {
+  it("blocks current Drive products until Stripe and fulfillment are configured", async () => {
     const express = (await import("express")).default;
     const { checkoutRouter } = await import("./checkout");
     const app = express(); app.use(express.json()); app.use(checkoutRouter);
-    const response = await requestApp(app, { marketplaceProductSlug: "prompt-pack-starter" });
+    const response = await requestApp(app, { marketplaceProductSlug: "business-bloom-virtual-executive-team" });
     expect(response.status).toBe(409);
     expect(response.body.error).toContain("Fulfillment configuration required");
   });
