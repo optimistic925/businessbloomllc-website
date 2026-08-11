@@ -1,6 +1,6 @@
 import { Router } from "express";
 import Stripe from "stripe";
-import { isRecurringPrice, getSuccessPath } from "../shared/servicePricing";
+import { getServiceByPriceId } from "../shared/servicePricing";
 import { DOMAIN_PRICE_IDS } from "../shared/domainPricing";
 import { getMarketplaceProduct } from "../shared/marketplaceProducts";
 import { getMarketplaceCommercialConfig } from "../shared/marketplaceCommercialConfig";
@@ -67,10 +67,17 @@ checkoutRouter.post("/api/create-checkout", async (req, res) => {
       });
     }
 
+    // Legacy checkout is server-allowlisted. Client-supplied product names and
+    // success paths are never trusted to define the commercial product.
+    const legacyService = marketplaceCommercial ? null : getServiceByPriceId(priceId);
+    if (!marketplaceCommercial && !legacyService) {
+      return res.status(403).json({ error: "Checkout product is not approved" });
+    }
+
     const PRODUCTION_ORIGIN = "https://businessbloomllc.com";
     const recurring = marketplaceCommercial
       ? marketplaceCommercial.billingModel === "RECURRING"
-      : isRecurringPrice(priceId);
+      : Boolean(legacyService?.recurring);
     const mode: Stripe.Checkout.SessionCreateParams["mode"] = recurring ? "subscription" : "payment";
 
     const metadata: Record<string, string> = {};
@@ -94,17 +101,17 @@ checkoutRouter.post("/api/create-checkout", async (req, res) => {
       metadata.requires_access = String(marketplaceProduct.requiresAccessInstructions);
       metadata.requires_onboarding = String(marketplaceProduct.requiresOnboarding);
       metadata.marketplace_product_slug = marketplaceProduct.slug;
-    } else if (body.productName) {
-      // Preserve legacy checkout behavior for existing site purchase buttons.
-      metadata.product_name = body.productName;
+    } else if (legacyService) {
+      metadata.product_name = legacyService.name;
     }
 
+    const trustedLegacyPath = legacyService?.successPath || "/";
     const successUrl = marketplaceProduct
       ? `${PRODUCTION_ORIGIN}/marketplace/success?session_id={CHECKOUT_SESSION_ID}`
-      : `${PRODUCTION_ORIGIN}${body.successPath || getSuccessPath(priceId) || "/"}?success=true`;
+      : `${PRODUCTION_ORIGIN}${trustedLegacyPath}?success=true`;
     const cancelUrl = marketplaceProduct
       ? `${PRODUCTION_ORIGIN}/marketplace/cancel?product=${encodeURIComponent(marketplaceProduct.slug)}`
-      : `${PRODUCTION_ORIGIN}${body.successPath || getSuccessPath(priceId) || "/"}?canceled=true`;
+      : `${PRODUCTION_ORIGIN}${trustedLegacyPath}?canceled=true`;
 
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode,
