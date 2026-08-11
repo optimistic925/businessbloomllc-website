@@ -1,0 +1,41 @@
+name: Rendered Hard-Gate QA
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  rendered-qa:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Install rendered QA tooling
+        run: |
+          npm install --no-save --package-lock=false playwright@1.55.0 axe-core@4.10.3
+          npx playwright install --with-deps chromium
+      - name: Start local built SPA
+        run: |
+          mkdir -p qa-artifacts
+          nohup pnpm exec vite preview --host 127.0.0.1 --port 4173 >/tmp/business-bloom-vite.log 2>&1 &
+          for i in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/business-bloom-vite.log
+          exit 1
+      - name: Run rendered mobile and accessibility checks
+        run: node scripts/rendered-hard-gate-qa.mjs
+      - name: Upload rendered QA screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rendered-hard-gate-qa
+          path: qa-artifacts
+          if-no-files-found: warn
