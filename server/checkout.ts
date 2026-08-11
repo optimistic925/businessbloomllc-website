@@ -2,7 +2,8 @@ import { Router } from "express";
 import Stripe from "stripe";
 import { isRecurringPrice, getSuccessPath } from "../shared/servicePricing";
 import { DOMAIN_PRICE_IDS } from "../shared/domainPricing";
-import { getMarketplaceProduct, productCheckoutReady } from "../shared/marketplaceProducts";
+import { getMarketplaceProduct } from "../shared/marketplaceProducts";
+import { getMarketplaceCommercialConfig } from "../shared/marketplaceCommercialConfig";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2026-05-27.dahlia",
@@ -28,23 +29,36 @@ interface CreateCheckoutBody {
   successPath?: string;
 }
 
+function marketplaceFulfillmentReady(product: NonNullable<ReturnType<typeof getMarketplaceProduct>>) {
+  if (product.fulfillmentStatus !== "READY") return false;
+  if (product.requiresDigitalDelivery && !product.downloadUrl) return false;
+  if (product.requiresAccessInstructions && !product.accessUrl) return false;
+  if (product.requiresOnboarding && !product.nextStepUrl) return false;
+  return true;
+}
+
 checkoutRouter.post("/api/create-checkout", async (req, res) => {
   try {
     const body = req.body as CreateCheckoutBody;
     const marketplaceProduct = body.marketplaceProductSlug ? getMarketplaceProduct(body.marketplaceProductSlug) : null;
+    const marketplaceCommercial = marketplaceProduct ? getMarketplaceCommercialConfig(marketplaceProduct.slug) : null;
 
     if (body.marketplaceProductSlug && !marketplaceProduct) {
       return res.status(404).json({ error: "Marketplace product not found" });
     }
 
-    if (marketplaceProduct && !productCheckoutReady(marketplaceProduct)) {
+    if (marketplaceProduct && !marketplaceCommercial) {
+      return res.status(409).json({ error: "Approved commercial configuration required before launch" });
+    }
+
+    if (marketplaceProduct && !marketplaceFulfillmentReady(marketplaceProduct)) {
       return res.status(409).json({
         error: "Fulfillment configuration required before launch",
         fulfillmentStatus: marketplaceProduct.fulfillmentStatus,
       });
     }
 
-    const priceId = marketplaceProduct?.stripePriceId || body.priceId;
+    const priceId = marketplaceCommercial?.stripePriceId || body.priceId;
     if (!priceId) return res.status(400).json({ error: "priceId is required" });
 
     if (isDomainPriceId(priceId)) {
@@ -54,7 +68,9 @@ checkoutRouter.post("/api/create-checkout", async (req, res) => {
     }
 
     const PRODUCTION_ORIGIN = "https://businessbloomllc.com";
-    const recurring = marketplaceProduct?.recurring ?? isRecurringPrice(priceId);
+    const recurring = marketplaceCommercial
+      ? marketplaceCommercial.billingModel === "RECURRING"
+      : isRecurringPrice(priceId);
     const mode: Stripe.Checkout.SessionCreateParams["mode"] = recurring ? "subscription" : "payment";
 
     const metadata: Record<string, string> = {};
@@ -68,13 +84,15 @@ checkoutRouter.post("/api/create-checkout", async (req, res) => {
     if (body.billingPeriod) metadata.billing_period = body.billingPeriod;
 
     if (marketplaceProduct) {
-      // Exact key names are contractually required by the existing n8n fulfillment workflow.
-      // Missing non-required destinations are represented as empty strings; required fields
-      // are already enforced by productCheckoutReady() above.
+      // Exact legacy metadata keys are preserved for the fulfillment contract.
+      // Product-specific requirement flags allow n8n to validate only relevant destinations.
       metadata.product_name = marketplaceProduct.name;
       metadata.download_url = marketplaceProduct.downloadUrl ?? "";
       metadata.access_url = marketplaceProduct.accessUrl ?? "";
       metadata.next_step_url = marketplaceProduct.nextStepUrl ?? "";
+      metadata.requires_download = String(marketplaceProduct.requiresDigitalDelivery);
+      metadata.requires_access = String(marketplaceProduct.requiresAccessInstructions);
+      metadata.requires_onboarding = String(marketplaceProduct.requiresOnboarding);
       metadata.marketplace_product_slug = marketplaceProduct.slug;
     } else if (body.productName) {
       // Preserve legacy checkout behavior for existing site purchase buttons.
@@ -105,6 +123,26 @@ checkoutRouter.post("/api/create-checkout", async (req, res) => {
   } catch (error: any) {
     console.error("[Checkout] Error creating session:", error.message);
     return res.status(500).json({ error: "Failed to create checkout session", details: error.message });
+  }
+});
+
+checkoutRouter.get("/api/checkout-session/:sessionId", async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    if (!sessionId?.startsWith("cs_")) {
+      return res.status(400).json({ error: "Invalid Checkout Session" });
+    }
+
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    return res.json({
+      id: session.id,
+      status: session.status,
+      paymentStatus: session.payment_status,
+      productName: session.metadata?.product_name || null,
+    });
+  } catch (error: any) {
+    console.error("[Checkout] Error retrieving session:", error.message);
+    return res.status(404).json({ error: "Checkout Session not found" });
   }
 });
 
