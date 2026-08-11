@@ -5,6 +5,7 @@ import { DOMAIN_PRICE_IDS } from "../shared/domainPricing";
 import { getMarketplaceProduct } from "../shared/marketplaceProducts";
 import { getMarketplaceCommercialConfig } from "../shared/marketplaceCommercialConfig";
 import { getMarketplaceFulfillmentDestination, marketplaceFulfillmentReady } from "./marketplaceFulfillment";
+import { signMarketplaceDownloadUrl } from "./marketplaceDownloadSigning";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2026-05-27.dahlia",
@@ -51,6 +52,16 @@ checkoutRouter.post("/api/create-checkout", async (req, res) => {
       });
     }
 
+    const signedDownloadUrl = marketplaceProduct?.requiresDigitalDelivery
+      ? signMarketplaceDownloadUrl(marketplaceDestination?.downloadUrl ?? null, marketplaceProduct.slug)
+      : null;
+
+    if (marketplaceProduct?.requiresDigitalDelivery && !signedDownloadUrl) {
+      return res.status(409).json({
+        error: "Fulfillment configuration required: signed customer delivery unavailable",
+      });
+    }
+
     const priceId = marketplaceCommercial?.stripePriceId || body.priceId;
     if (!priceId) return res.status(400).json({ error: "priceId is required" });
 
@@ -87,7 +98,7 @@ checkoutRouter.post("/api/create-checkout", async (req, res) => {
       // Fulfillment destinations come only from server-trusted configuration.
       // Browser-supplied product names, prices, and URLs are ignored.
       metadata.product_name = marketplaceProduct.name;
-      metadata.download_url = marketplaceDestination.downloadUrl ?? "";
+      metadata.download_url = signedDownloadUrl ?? "";
       metadata.access_url = marketplaceDestination.accessUrl ?? "";
       metadata.next_step_url = marketplaceDestination.nextStepUrl ?? "";
       metadata.requires_download = String(marketplaceProduct.requiresDigitalDelivery);
