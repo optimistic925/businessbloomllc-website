@@ -168,8 +168,14 @@ export const MARKETPLACE_COMMERCIAL_CONFIG: Record<string, MarketplaceCommercial
   },
 };
 
+/** Temporary registry compatibility until the Drive product slug is normalized. */
+const COMMERCIAL_SLUG_ALIASES: Record<string, string> = {
+  "business-bloom-foundation-system": "business-bloom-llc-foundation-system",
+};
+
 export function getMarketplaceCommercialConfig(slug: string) {
-  return MARKETPLACE_COMMERCIAL_CONFIG[slug] ?? null;
+  const commercialSlug = COMMERCIAL_SLUG_ALIASES[slug] ?? slug;
+  return MARKETPLACE_COMMERCIAL_CONFIG[commercialSlug] ?? null;
 }
 
 export const PROFESSIONAL_SYSTEM_COMPONENT_SLUGS = [
