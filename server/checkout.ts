@@ -47,7 +47,7 @@ checkoutRouter.post("/api/create-checkout", async (req, res) => {
 
     if (marketplaceProduct && marketplaceDestination && !marketplaceFulfillmentReady(marketplaceProduct, marketplaceDestination)) {
       return res.status(409).json({
-        error: "Customer-safe fulfillment configuration required before launch",
+        error: "Fulfillment configuration required: customer-safe destination missing",
       });
     }
 
