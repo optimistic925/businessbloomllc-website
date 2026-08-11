@@ -4,6 +4,7 @@ import { getServiceByPriceId } from "../shared/servicePricing";
 import { DOMAIN_PRICE_IDS } from "../shared/domainPricing";
 import { getMarketplaceProduct } from "../shared/marketplaceProducts";
 import { getMarketplaceCommercialConfig } from "../shared/marketplaceCommercialConfig";
+import { getMarketplaceFulfillmentDestination, marketplaceFulfillmentReady } from "./marketplaceFulfillment";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2026-05-27.dahlia",
@@ -29,19 +30,12 @@ interface CreateCheckoutBody {
   successPath?: string;
 }
 
-function marketplaceFulfillmentReady(product: NonNullable<ReturnType<typeof getMarketplaceProduct>>) {
-  if (product.fulfillmentStatus !== "READY") return false;
-  if (product.requiresDigitalDelivery && !product.downloadUrl) return false;
-  if (product.requiresAccessInstructions && !product.accessUrl) return false;
-  if (product.requiresOnboarding && !product.nextStepUrl) return false;
-  return true;
-}
-
 checkoutRouter.post("/api/create-checkout", async (req, res) => {
   try {
     const body = req.body as CreateCheckoutBody;
     const marketplaceProduct = body.marketplaceProductSlug ? getMarketplaceProduct(body.marketplaceProductSlug) : null;
     const marketplaceCommercial = marketplaceProduct ? getMarketplaceCommercialConfig(marketplaceProduct.slug) : null;
+    const marketplaceDestination = marketplaceProduct ? getMarketplaceFulfillmentDestination(marketplaceProduct.slug) : null;
 
     if (body.marketplaceProductSlug && !marketplaceProduct) {
       return res.status(404).json({ error: "Marketplace product not found" });
@@ -51,10 +45,9 @@ checkoutRouter.post("/api/create-checkout", async (req, res) => {
       return res.status(409).json({ error: "Approved commercial configuration required before launch" });
     }
 
-    if (marketplaceProduct && !marketplaceFulfillmentReady(marketplaceProduct)) {
+    if (marketplaceProduct && marketplaceDestination && !marketplaceFulfillmentReady(marketplaceProduct, marketplaceDestination)) {
       return res.status(409).json({
-        error: "Fulfillment configuration required before launch",
-        fulfillmentStatus: marketplaceProduct.fulfillmentStatus,
+        error: "Customer-safe fulfillment configuration required before launch",
       });
     }
 
@@ -90,13 +83,13 @@ checkoutRouter.post("/api/create-checkout", async (req, res) => {
     if (body.domain) metadata.domain = body.domain;
     if (body.billingPeriod) metadata.billing_period = body.billingPeriod;
 
-    if (marketplaceProduct) {
-      // Exact legacy metadata keys are preserved for the fulfillment contract.
-      // Product-specific requirement flags allow n8n to validate only relevant destinations.
+    if (marketplaceProduct && marketplaceDestination) {
+      // Fulfillment destinations come only from server-trusted configuration.
+      // Browser-supplied product names, prices, and URLs are ignored.
       metadata.product_name = marketplaceProduct.name;
-      metadata.download_url = marketplaceProduct.downloadUrl ?? "";
-      metadata.access_url = marketplaceProduct.accessUrl ?? "";
-      metadata.next_step_url = marketplaceProduct.nextStepUrl ?? "";
+      metadata.download_url = marketplaceDestination.downloadUrl ?? "";
+      metadata.access_url = marketplaceDestination.accessUrl ?? "";
+      metadata.next_step_url = marketplaceDestination.nextStepUrl ?? "";
       metadata.requires_download = String(marketplaceProduct.requiresDigitalDelivery);
       metadata.requires_access = String(marketplaceProduct.requiresAccessInstructions);
       metadata.requires_onboarding = String(marketplaceProduct.requiresOnboarding);
@@ -181,9 +174,9 @@ checkoutRouter.post("/api/stripe/webhook", async (req, res) => {
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
-      console.log("[Webhook] Checkout completed:", { sessionId: session.id, customerEmail: session.customer_email, metadata: session.metadata });
-      if (session.metadata?.domain_name) console.log(`[Webhook] Domain registration needed: ${session.metadata.domain_name} for ${session.customer_email}`);
-      if (session.metadata?.product_name) console.log(`[Webhook] Product purchased: ${session.metadata.product_name} by ${session.customer_email}`);
+      console.log("[Webhook] Checkout completed:", { sessionId: session.id, customerEmail: session.customer_email });
+      if (session.metadata?.domain_name) console.log(`[Webhook] Domain registration needed for session ${session.id}`);
+      if (session.metadata?.product_name) console.log(`[Webhook] Product purchased: ${session.metadata.product_name} in session ${session.id}`);
       break;
     }
     case "payment_intent.succeeded":
@@ -197,4 +190,7 @@ checkoutRouter.post("/api/stripe/webhook", async (req, res) => {
   }
 
   return res.json({ received: true });
+});
+
+return res.json({ received: true });
 });
