@@ -1,5 +1,7 @@
 interface Env {
-  BUSINESS_BLOOM_PAID_PRODUCTS: R2Bucket;
+  BUSINESS_BLOOM_PAID_PRODUCTS: {
+    get(key: string): Promise<any>;
+  };
   DOWNLOAD_SIGNING_SECRET: string;
 }
 
@@ -64,4 +66,4 @@ export default {
 
     return new Response(request.method === "HEAD" ? null : object.body, { headers });
   },
-} satisfies ExportedHandler<Env>;
+};
