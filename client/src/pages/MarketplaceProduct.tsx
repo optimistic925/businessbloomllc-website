@@ -4,7 +4,53 @@ import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 import { initiateMarketplaceCheckout } from "@/lib/checkout";
 import { PUBLIC_MARKETPLACE_PRODUCTS, getPublicMarketplaceProduct } from "../../../shared/marketplacePublicCatalog";
-import { getMarketplaceCommercialConfig } from "../../../shared/marketplaceCommercialConfig";
+import { getMarketplaceCommercialConfig, getProfessionalSystemsBundleEconomics } from "../../../shared/marketplaceCommercialConfig";
+
+const PROFESSIONAL_SYSTEMS_INCLUDED = [
+  {
+    name: "Customer Service System™",
+    description: "Build consistent service standards, customer-response processes, escalation procedures, follow-up expectations, and customer-experience workflows.",
+  },
+  {
+    name: "HR System™",
+    description: "Organize hiring, onboarding, employee management, performance processes, documentation, and core HR operations.",
+  },
+  {
+    name: "Marketing System™",
+    description: "Create a repeatable framework for audience targeting, messaging, campaigns, promotions, content direction, and marketing execution.",
+  },
+  {
+    name: "Operations System™",
+    description: "Document workflows, organize SOPs, improve processes, assign responsibilities, and create repeatable day-to-day operating procedures.",
+  },
+  {
+    name: "AI Automation Bundles™",
+    description: "Use practical AI workflows, prompts, and automation frameworks to reduce repetitive work, improve consistency, and support business execution.",
+  },
+  {
+    name: "Sales System™",
+    description: "Structure prospecting, qualification, sales conversations, objection handling, follow-up, closing, tracking, retention, and referrals.",
+  },
+] as const;
+
+const PROFESSIONAL_SYSTEMS_TOOLKIT = [
+  {
+    name: "Professional Systems Start Here Guide",
+    description: "Shows you where to begin and how to approach implementation across the bundle.",
+  },
+  {
+    name: "Customer Use Framework",
+    description: "Helps you turn the materials into an operating system rather than a collection of unused files.",
+  },
+  {
+    name: "Professional Systems Dashboard",
+    description: "Provides one place to track implementation progress across the included systems.",
+  },
+  {
+    name: "Professional Systems Customer Package",
+    description: "Organizes the customer-facing system resources and implementation materials into the complete bundle.",
+  },
+] as const;
 
 function audienceFor(category: string) {
   switch (category) {
@@ -31,10 +77,14 @@ function problemFor(category: string) {
 function deliveryCopy(type: "download" | "access" | "onboarding" | "hybrid") {
   switch (type) {
     case "access": return "After a successful purchase, Business Bloom sends secure access instructions to the customer email used at checkout.";
-    case "onboarding": return "After a successful purchase, Business Bloom sends onboarding instructions and the approved next-step destination to the customer email used at checkout.";
+    case "onboarding": return "After a successful purchase, Business Bloom sends onboarding instructions and the next-step destination to the customer email used at checkout.";
     case "hybrid": return "After a successful purchase, Business Bloom sends the required combination of download, access, and onboarding instructions to the customer email used at checkout.";
-    default: return "After a successful purchase, Business Bloom sends the approved customer download instructions to the customer email used at checkout.";
+    default: return "After a successful purchase, Business Bloom sends protected customer download instructions to the customer email used at checkout.";
   }
+}
+
+function formatCurrency(cents: number) {
+  return `$${(cents / 100).toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
 }
 
 export default function MarketplaceProduct() {
@@ -47,6 +97,8 @@ export default function MarketplaceProduct() {
 
   const commercial = getMarketplaceCommercialConfig(product.slug);
   const checkoutReady = Boolean(commercial);
+  const isProfessionalSystemsBundle = product.slug === "business-bloom-professional-systems";
+  const bundleEconomics = isProfessionalSystemsBundle ? getProfessionalSystemsBundleEconomics() : null;
   const relatedProducts = PUBLIC_MARKETPLACE_PRODUCTS
     .filter((candidate) => candidate.slug !== product.slug)
     .sort((a, b) => Number(b.category === product.category) - Number(a.category === product.category))
@@ -71,22 +123,58 @@ export default function MarketplaceProduct() {
 
               <div className="grid sm:grid-cols-2 gap-8 mt-10"><div><h2 className="text-xl font-bold">Who it is for</h2><p className="mt-4 text-white/65 text-sm leading-relaxed">{audienceFor(product.category)}</p></div><div><h2 className="text-xl font-bold">The problem it solves</h2><p className="mt-4 text-white/65 text-sm leading-relaxed">{problemFor(product.category)}</p></div></div>
 
-              <div className="grid sm:grid-cols-2 gap-8 mt-10"><div><h2 className="text-xl font-bold">Key benefits</h2><ul className="space-y-3 mt-4">{product.benefits.slice(0, 6).map((item) => <li key={item} className="flex gap-3 text-white/70 text-sm"><CheckCircle2 className="h-5 w-5 text-[#14B8A6] shrink-0" />{item}</li>)}</ul></div><div><h2 className="text-xl font-bold">What’s included</h2><ul className="space-y-3 mt-4">{product.included.map((item) => <li key={item} className="flex gap-3 text-white/70 text-sm"><CheckCircle2 className="h-5 w-5 text-[#7C3AED] shrink-0" />{item}</li>)}</ul></div></div>
+              <div className={`grid gap-8 mt-10 ${isProfessionalSystemsBundle ? "sm:grid-cols-1" : "sm:grid-cols-2"}`}><div><h2 className="text-xl font-bold">Key benefits</h2><ul className="space-y-3 mt-4">{product.benefits.slice(0, 6).map((item) => <li key={item} className="flex gap-3 text-white/70 text-sm"><CheckCircle2 className="h-5 w-5 text-[#14B8A6] shrink-0" />{item}</li>)}</ul></div>{!isProfessionalSystemsBundle && <div><h2 className="text-xl font-bold">What’s included</h2><ul className="space-y-3 mt-4">{product.included.map((item) => <li key={item} className="flex gap-3 text-white/70 text-sm"><CheckCircle2 className="h-5 w-5 text-[#7C3AED] shrink-0" />{item}</li>)}</ul></div>}</div>
 
-              <div className="mt-10 p-6 rounded-2xl border border-white/10 bg-[#0D1120]"><h2 className="text-xl font-bold">How it works</h2><ol className="mt-4 grid sm:grid-cols-3 gap-5 text-sm text-white/60"><li><strong className="text-white block mb-1">1. Choose the system</strong>Review the outcome, included tools, price, and fit for your business.</li><li><strong className="text-white block mb-1">2. Complete checkout</strong>Secure one-time payment is handled through Stripe using the approved product and price mapping.</li><li><strong className="text-white block mb-1">3. Receive instructions</strong>{deliveryCopy(product.fulfillmentType)}</li></ol></div>
+              {isProfessionalSystemsBundle && bundleEconomics && (
+                <section className="mt-12 rounded-3xl border border-[#7C3AED]/25 bg-[#0D1120] p-6 sm:p-8">
+                  <p className="text-[#BDA4FF] text-sm font-bold uppercase tracking-wider">What’s Included</p>
+                  <h2 className="mt-2 text-3xl font-black">6 Complete Business Systems</h2>
+                  <p className="mt-4 text-white/65 leading-relaxed max-w-3xl">Instead of purchasing six business systems separately, Professional Systems™ brings them together into one coordinated framework so you can build, manage, market, sell, serve, and systemize your business from one place.</p>
+
+                  <div className="grid md:grid-cols-2 gap-4 mt-7">
+                    {PROFESSIONAL_SYSTEMS_INCLUDED.map((system) => (
+                      <article key={system.name} className="p-5 rounded-2xl border border-white/10 bg-[#0B0F1A]">
+                        <h3 className="font-bold text-lg">{system.name}</h3>
+                        <p className="mt-2 text-sm text-white/55 leading-relaxed">{system.description}</p>
+                      </article>
+                    ))}
+                  </div>
+
+                  <div className="mt-9">
+                    <h3 className="text-2xl font-black">Plus Your Implementation Toolkit</h3>
+                    <div className="grid md:grid-cols-2 gap-4 mt-5">
+                      {PROFESSIONAL_SYSTEMS_TOOLKIT.map((item) => (
+                        <article key={item.name} className="p-5 rounded-2xl border border-white/10 bg-white/[0.03]">
+                          <h4 className="font-bold">{item.name}</h4>
+                          <p className="mt-2 text-sm text-white/55 leading-relaxed">{item.description}</p>
+                        </article>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mt-8 grid sm:grid-cols-3 gap-4">
+                    <div className="p-5 rounded-2xl border border-white/10 bg-white/[0.03]"><p className="text-xs uppercase tracking-wider text-white/40">Six-system retail value</p><p className="mt-2 text-2xl font-black">{formatCurrency(bundleEconomics.individualRetailValueCents)}</p></div>
+                    <div className="p-5 rounded-2xl border border-[#14B8A6]/25 bg-[#14B8A6]/5"><p className="text-xs uppercase tracking-wider text-white/40">Professional Systems™</p><p className="mt-2 text-2xl font-black text-[#14B8A6]">{formatCurrency(bundleEconomics.bundlePriceCents)}</p></div>
+                    <div className="p-5 rounded-2xl border border-white/10 bg-white/[0.03]"><p className="text-xs uppercase tracking-wider text-white/40">You save</p><p className="mt-2 text-2xl font-black">{formatCurrency(bundleEconomics.savingsCents)} <span className="text-base text-white/55">({(bundleEconomics.savingsPercent * 100).toFixed(1)}%)</span></p></div>
+                  </div>
+                </section>
+              )}
+
+              <div className="mt-10 p-6 rounded-2xl border border-white/10 bg-[#0D1120]"><h2 className="text-xl font-bold">How it works</h2><ol className="mt-4 grid sm:grid-cols-3 gap-5 text-sm text-white/60"><li><strong className="text-white block mb-1">1. Choose the system</strong>Review the outcome, included tools, price, and fit for your business.</li><li><strong className="text-white block mb-1">2. Complete checkout</strong>Secure one-time payment is handled through Stripe.</li><li><strong className="text-white block mb-1">3. Receive instructions</strong>{deliveryCopy(product.fulfillmentType)}</li></ol></div>
 
               <div className="grid sm:grid-cols-2 gap-6 mt-8"><div className="p-6 rounded-2xl border border-white/10 bg-[#0D1120]"><h2 className="text-xl font-bold">Format & delivery</h2><p className="mt-3 text-sm leading-relaxed text-white/55">Digital Business Bloom product. No physical shipment is required. {deliveryCopy(product.fulfillmentType)}</p></div><div className="p-6 rounded-2xl border border-white/10 bg-[#0D1120]"><h2 className="text-xl font-bold">License & use</h2><p className="mt-3 text-sm leading-relaxed text-white/55">Purchase provides customer use rights under the applicable Business Bloom license and Terms. Redistribution, resale, or public sharing is not included unless the product license expressly says otherwise.</p></div></div>
 
-              <div className="mt-8 p-6 rounded-2xl border border-white/10 bg-[#0D1120]"><h2 className="text-xl font-bold">FAQ</h2><div className="mt-4 grid sm:grid-cols-2 gap-6 text-sm"><div><h3 className="font-semibold">Is this a subscription?</h3><p className="text-white/55 mt-1">No. The current approved product is priced as a one-time purchase.</p></div><div><h3 className="font-semibold">Do I need special software?</h3><p className="text-white/55 mt-1">Use requirements vary by the included editable tools. Product instructions identify the appropriate formats and next steps.</p></div><div><h3 className="font-semibold">How will I receive it?</h3><p className="text-white/55 mt-1">Delivery instructions are sent to the customer email after successful payment using the approved fulfillment flow.</p></div><div><h3 className="font-semibold">Where do I get help?</h3><p className="text-white/55 mt-1">Email <a href="mailto:support@businessbloomllc.com" className="text-[#14B8A6] hover:underline">support@businessbloomllc.com</a> for purchase, delivery, access, onboarding, or product questions.</p></div></div></div>
+              <div className="mt-8 p-6 rounded-2xl border border-white/10 bg-[#0D1120]"><h2 className="text-xl font-bold">FAQ</h2><div className="mt-4 grid sm:grid-cols-2 gap-6 text-sm"><div><h3 className="font-semibold">Is this a subscription?</h3><p className="text-white/55 mt-1">No. This is a one-time purchase.</p></div><div><h3 className="font-semibold">Do I need special software?</h3><p className="text-white/55 mt-1">Use requirements vary by the included editable tools. Product instructions identify the appropriate formats and next steps.</p></div><div><h3 className="font-semibold">How will I receive it?</h3><p className="text-white/55 mt-1">Delivery instructions are sent to the customer email after successful payment.</p></div><div><h3 className="font-semibold">Where do I get help?</h3><p className="text-white/55 mt-1">Email <a href="mailto:support@businessbloomllc.com" className="text-[#14B8A6] hover:underline">support@businessbloomllc.com</a> for purchase, delivery, access, onboarding, or product questions.</p></div></div></div>
 
               <div className="mt-8 p-6 rounded-2xl border border-white/10 bg-[#0D1120]"><h2 className="text-xl font-bold">Important use boundary</h2><p className="mt-3 text-sm leading-relaxed text-white/55">Business Bloom products provide business planning and implementation resources. They do not replace licensed legal, tax, accounting, HR, medical, or other regulated professional advice where professional review is required.</p></div>
             </div>
 
             <aside className="lg:sticky lg:top-24 h-fit p-7 rounded-2xl bg-[#0D1120] border border-white/10">
               <p className="text-sm text-white/45">One-time price</p><p className="text-3xl font-black text-[#14B8A6] mt-1">{commercial?.priceDisplay ?? "Unavailable"}</p>
+              {isProfessionalSystemsBundle && bundleEconomics && <p className="mt-2 text-sm text-white/50">Six-system retail value {formatCurrency(bundleEconomics.individualRetailValueCents)} · Save {formatCurrency(bundleEconomics.savingsCents)} ({(bundleEconomics.savingsPercent * 100).toFixed(1)}%)</p>}
               <p className="mt-4 text-sm text-white/55 leading-relaxed">{product.shortDescription}</p>
-              {checkoutReady ? <div className="mt-6"><button onClick={() => initiateMarketplaceCheckout(product.slug)} className="w-full px-5 py-3.5 rounded-xl bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-bold inline-flex items-center justify-center gap-2"><LockKeyhole className="h-4 w-4" /> Continue to secure checkout</button><p className="mt-3 text-xs text-white/45 leading-relaxed">By continuing, you are purchasing a one-time digital product and agree to the <a href="/terms" className="text-[#14B8A6] hover:underline">Terms of Service</a> and acknowledge the <a href="/privacy" className="text-[#14B8A6] hover:underline">Privacy Policy</a>. Digital-product purchases are treated as final after delivery or access is made available, subject to applicable law and Business Bloom’s documented fulfillment-error remedies.</p></div> : <div className="mt-6"><button disabled className="w-full px-5 py-3.5 rounded-xl bg-white/5 border border-white/10 text-white/40 font-bold cursor-not-allowed inline-flex items-center justify-center gap-2"><LockKeyhole className="h-4 w-4" /> Checkout unavailable</button><p className="mt-3 text-xs text-white/45">This product does not currently have an approved commercial configuration.</p></div>}
-              <dl className="mt-6 space-y-3 text-sm"><div className="flex justify-between gap-4"><dt className="text-white/45">Catalog</dt><dd className="text-white/75 text-right">Current approved</dd></div><div className="flex justify-between gap-4"><dt className="text-white/45">Billing</dt><dd className="text-white/75 text-right">One-time</dd></div><div className="flex justify-between gap-4"><dt className="text-white/45">Fulfillment</dt><dd className="text-white/75 text-right capitalize">{product.fulfillmentType}</dd></div><div className="flex justify-between gap-4"><dt className="text-white/45">Stripe mapping</dt><dd className="text-white/75 text-right">{commercial ? "Verified" : "Required"}</dd></div></dl>
+              {checkoutReady ? <div className="mt-6"><button onClick={() => initiateMarketplaceCheckout(product.slug)} className="w-full px-5 py-3.5 rounded-xl bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-bold inline-flex items-center justify-center gap-2"><LockKeyhole className="h-4 w-4" /> Continue to secure checkout</button><p className="mt-3 text-xs text-white/45 leading-relaxed">By continuing, you are purchasing a one-time digital product and agree to the <a href="/terms" className="text-[#14B8A6] hover:underline">Terms of Service</a> and acknowledge the <a href="/privacy" className="text-[#14B8A6] hover:underline">Privacy Policy</a>. Digital-product purchases are treated as final after delivery or access is made available, subject to applicable law and Business Bloom’s documented fulfillment-error remedies.</p></div> : <div className="mt-6"><button disabled className="w-full px-5 py-3.5 rounded-xl bg-white/5 border border-white/10 text-white/40 font-bold cursor-not-allowed inline-flex items-center justify-center gap-2"><LockKeyhole className="h-4 w-4" /> Checkout unavailable</button><p className="mt-3 text-xs text-white/45">This product is temporarily unavailable for checkout.</p></div>}
+              <dl className="mt-6 space-y-3 text-sm"><div className="flex justify-between gap-4"><dt className="text-white/45">Billing</dt><dd className="text-white/75 text-right">One-time</dd></div><div className="flex justify-between gap-4"><dt className="text-white/45">Payment</dt><dd className="text-white/75 text-right">Secure Stripe checkout</dd></div><div className="flex justify-between gap-4"><dt className="text-white/45">Fulfillment</dt><dd className="text-white/75 text-right capitalize">{product.fulfillmentType}</dd></div><div className="flex justify-between gap-4"><dt className="text-white/45">Support</dt><dd className="text-white/75 text-right">support@businessbloomllc.com</dd></div></dl>
               <a href="/support" className="mt-6 inline-flex w-full items-center justify-center gap-2 text-sm text-[#14B8A6] font-semibold"><HelpCircle className="h-4 w-4" /> Questions before purchase?</a>
             </aside>
           </div>
