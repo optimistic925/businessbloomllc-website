@@ -54,6 +54,12 @@ function encodedObjectPath(objectKey: string) {
 async function signedBrandingManifest(request: Request, url: URL, secret: string, expires: number) {
   if (url.pathname !== BRANDING_ROUTE || url.searchParams.get("product") !== BRANDING_PRODUCT) return null;
 
+  if (url.searchParams.get("probe") === "1") {
+    return privateResponse(JSON.stringify({ ok: true, product: BRANDING_PRODUCT, parts: BRANDING_OBJECT_KEYS.length }), 200, {
+      "content-type": "application/json; charset=utf-8",
+    });
+  }
+
   const links = await Promise.all(
     BRANDING_OBJECT_KEYS.map(async (objectKey) => {
       const path = encodedObjectPath(objectKey);
@@ -123,6 +129,12 @@ export default {
 
     const object = await env.BUSINESS_BLOOM_PAID_PRODUCTS.get(objectKey);
     if (!object) return privateResponse("Not Found", 404);
+
+    if (url.searchParams.get("probe") === "1") {
+      return privateResponse(JSON.stringify({ ok: true, product, objectKey, contentType: object.httpMetadata?.contentType || null }), 200, {
+        "content-type": "application/json; charset=utf-8",
+      });
+    }
 
     const headers = new Headers();
     object.writeHttpMetadata(headers);
