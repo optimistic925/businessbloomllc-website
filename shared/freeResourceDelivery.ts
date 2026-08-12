@@ -4,8 +4,8 @@ import {
 } from "./freeResourceDeliveryConfig";
 
 const CUSTOMER_SAFE_REPAIRED_URLS: Record<string, string> = {
-  "30-minute-business-reset": "/api/free-resources/30-minute-business-reset",
-  "business-systems-checklist": "/api/free-resources/business-systems-checklist",
+  "30-minute-business-reset": "/downloads/free-resources/Business-Bloom-30-Minute-Business-Reset-Fillable.pdf",
+  "business-systems-checklist": "/downloads/free-resources/Business-Bloom-Business-Systems-Checklist-Fillable.pdf",
   "business-health-check": "/api/free-resources/business-health-check",
   "marketing-roi-calculator": "/api/free-resources/marketing-roi-calculator",
 };
