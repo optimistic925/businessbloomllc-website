@@ -83,7 +83,7 @@ export default function Resources() {
                     <div className="mt-5"><span className="text-2xl font-black text-[#14B8A6]">FREE</span></div>
                     {ready ? (
                       resource.slug === "brand-message-quick-check" ? (
-                        <a role="button" href={delivery!.deliveryUrl!} className={buttonClass}>{delivery?.ctaLabel} <ArrowRight className="h-4 w-4" /></a>
+                        <a role="button" href={delivery!.deliveryUrl!} download={FREE_RESOURCE_FILENAMES[resource.slug]} className={buttonClass}>{delivery?.ctaLabel} <ArrowRight className="h-4 w-4" /></a>
                       ) : (
                         <button type="button" onClick={() => downloadFreeResource(resource.slug, delivery!.deliveryUrl!)} className={buttonClass}>{delivery?.ctaLabel} <ArrowRight className="h-4 w-4" /></button>
                       )
