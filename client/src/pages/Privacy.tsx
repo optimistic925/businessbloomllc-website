@@ -2,192 +2,50 @@ import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 import { Shield } from "lucide-react";
 
-/**
- * Privacy Policy — Business Bloom LLC
- *
- * This is placeholder business-policy content suitable for legal review.
- * Provisions requiring owner or attorney confirmation are labeled
- * with [REQUIRES OWNER/ATTORNEY REVIEW].
- *
- * No company addresses, specific refund periods, or governing-law
- * provisions have been invented.
- */
 export default function Privacy() {
   return (
     <div className="min-h-screen bg-[#0B0F1A] text-white">
       <NavBar />
+      <main className="pt-32 pb-20">
+        <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-3 mb-8"><div className="w-12 h-12 rounded-xl bg-[#7C3AED]/10 flex items-center justify-center"><Shield className="h-6 w-6 text-[#7C3AED]" /></div><h1 className="text-3xl sm:text-4xl font-black" style={{ fontFamily: "var(--font-display)" }}>Privacy Policy</h1></div>
+          <p className="text-white/40 text-sm mb-12">Last updated: August 2026</p>
 
-      <section className="relative pt-32 pb-20 overflow-hidden">
-        <div className="absolute inset-0">
-          <div className="absolute top-1/4 left-1/4 w-[400px] h-[400px] bg-[#7C3AED]/8 rounded-full blur-3xl" />
-        </div>
+          <div className="space-y-10 text-white/70 leading-relaxed">
+            <section><h2 className="text-xl font-bold text-white mb-4">1. Scope</h2><p>This Privacy Policy describes how Business Bloom LLC handles information associated with the Business Bloom website, Marketplace, Free Resources, support interactions, digital-product delivery, onboarding, and other Business Bloom services that reference this Policy.</p></section>
 
-        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-12 h-12 rounded-xl bg-[#7C3AED]/10 flex items-center justify-center">
-              <Shield className="h-6 w-6 text-[#7C3AED]" />
-            </div>
-            <h1
-              className="text-3xl sm:text-4xl font-black"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              Privacy Policy
-            </h1>
+            <section><h2 className="text-xl font-bold text-white mb-4">2. Information You Provide</h2><p>Depending on how you use Business Bloom, you may provide information such as your name, email address, phone number, business information, purchase and order details, support-request details, form responses, onboarding information, and communications you choose to send to Business Bloom. Do not submit passwords, secret keys, full payment-card numbers, or sensitive third-party information unless a Business Bloom process specifically requires it and provides an appropriate secure method.</p></section>
+
+            <section><h2 className="text-xl font-bold text-white mb-4">3. Payment Information</h2><p>Marketplace payments are processed through Stripe. Business Bloom receives transaction information needed to identify purchases, confirm payment status, provide fulfillment, reconcile orders, and support customers, but ordinary Business Bloom support channels are not intended to collect full payment-card numbers. Stripe processes payment information under its own privacy and security practices.</p></section>
+
+            <section><h2 className="text-xl font-bold text-white mb-4">4. Website and Technical Information</h2><p>Business Bloom and service providers supporting the website may process technical information needed to operate, secure, diagnose, and improve the service, such as IP address, browser or device information, request logs, page interactions, referral information, timestamps, and similar operational data. Analytics or measurement technologies may be used when configured on the site; their operation depends on the production configuration in use at the time.</p></section>
+
+            <section><h2 className="text-xl font-bold text-white mb-4">5. How Information Is Used</h2><p>Business Bloom may use information to provide and operate services; process and confirm purchases; deliver digital products, access instructions, or onboarding information; provide requested Free Resources; answer support requests; maintain order and license records; detect misuse and protect systems; troubleshoot failures; improve service quality; comply with applicable business or legal obligations; and send transactional communications appropriate to the customer relationship. Promotional marketing communications are separate from required transactional delivery and should honor the communication preferences and unsubscribe mechanisms provided with those messages.</p></section>
+
+            <section><h2 className="text-xl font-bold text-white mb-4">6. Service Providers and Processing Categories</h2><p>Business Bloom may use third-party service providers for payment processing, website hosting, communications, workflow automation, analytics, storage, customer support, and related technical functions. Providers receive or process only the information reasonably needed for their role, subject to the provider relationship and configuration. Business Bloom does not sell payment-card data and does not require customers to expose passwords, secret keys, or full card data through ordinary support requests.</p></section>
+
+            <section><h2 className="text-xl font-bold text-white mb-4">7. Digital Product Delivery</h2><p>Purchase and contact information may be used to send transaction confirmation and the delivery, access, or onboarding instructions relevant to the product purchased. Customer-facing delivery paths are intended to exclude internal production folders, engineering materials, private credentials, unrelated customer data, and Internal-Do-Not-Distribute assets. Order and delivery events may be logged as needed to prevent duplicate fulfillment, recover partial failures, and respond to delivery questions.</p></section>
+
+            <section><h2 className="text-xl font-bold text-white mb-4">8. AI and Sensitive Information</h2><p>Some Business Bloom products include AI-assisted workflows or prompts. Do not submit confidential, regulated, personal, employee, customer, financial, health, or other sensitive information to an AI or third-party tool unless you are authorized to do so and appropriate safeguards are in place. AI output should be reviewed before use. Customers are responsible for the privacy, permission, retention, and professional-review requirements that apply to information they place into their own AI tools or third-party systems.</p></section>
+
+            <section><h2 className="text-xl font-bold text-white mb-4">9. Security</h2><p>Business Bloom uses technical and organizational safeguards intended to reduce unauthorized access, disclosure, misuse, or loss of information. Safeguards may include access controls, server-side processing of trusted commercial configuration, restricted internal source records, and separation of customer-facing delivery from internal production materials. No online system can be guaranteed to be completely secure, so customers should also protect their accounts, devices, credentials, and copies of purchased files.</p></section>
+
+            <section><h2 className="text-xl font-bold text-white mb-4">10. Retention, Deletion, and Minimization</h2><p>Business Bloom retains information only for as long as reasonably needed for the purpose for which it was collected and for legitimate operational needs such as fulfillment, transaction and accounting records, license administration, support history, security and fraud prevention, dispute handling, and applicable legal obligations. Information that is no longer reasonably needed should be deleted, de-identified, or maintained only where a continuing recordkeeping or legal need applies. Different systems and categories of information may therefore have different retention periods.</p></section>
+
+            <section><h2 className="text-xl font-bold text-white mb-4">11. Privacy Requests</h2><p>You may contact Business Bloom Support to ask about personal information associated with your Business Bloom relationship or to request access, correction, deletion, restriction, or another privacy action. Business Bloom may need to verify identity and the relevant account or transaction before acting. A request may be limited where Business Bloom must retain information for a transaction, security, dispute, accounting, legal, or other legitimate requirement. Where applicable law provides additional rights, Business Bloom will address qualifying requests in accordance with those requirements.</p></section>
+
+            <section><h2 className="text-xl font-bold text-white mb-4">12. Communications</h2><p>Transactional messages may be sent when needed to confirm a purchase, deliver a product or Free Resource, provide access or onboarding instructions, respond to support, or communicate an important service matter. Marketing messages, when used, should provide an appropriate way to opt out of future promotional email. Opting out of promotional email does not prevent necessary transactional or service communications relating to a purchase or active request.</p></section>
+
+            <section><h2 className="text-xl font-bold text-white mb-4">13. Children</h2><p>Business Bloom products and services are intended for business users and are not designed or directed as services for children. If Business Bloom becomes aware that personal information was submitted inappropriately by or about a child, it may take steps appropriate to the circumstances.</p></section>
+
+            <section><h2 className="text-xl font-bold text-white mb-4">14. International and Regional Use</h2><p>Business Bloom operates online and customers may access services from different locations. Privacy, employment, marketing, recordkeeping, and other requirements can vary by jurisdiction. This Policy describes Business Bloom’s general practices; additional rights or obligations may apply based on location and the service involved.</p></section>
+
+            <section><h2 className="text-xl font-bold text-white mb-4">15. Changes</h2><p>This Policy may be updated as Business Bloom products, service providers, and data practices evolve. Material updates will be reflected by an updated revision date and apply prospectively unless a different effective date is stated.</p></section>
+
+            <section><h2 className="text-xl font-bold text-white mb-4">16. Contact</h2><p>For privacy questions or requests, use Business Bloom Support and describe the request without including passwords, full card numbers, API keys, or other secrets.</p><a href="/support" className="inline-flex mt-4 text-[#14B8A6] font-semibold hover:underline">Business Bloom Support</a></section>
           </div>
-
-          <p className="text-white/40 text-sm mb-12">
-            Last updated: July 2026 · This document is a placeholder pending legal review.
-          </p>
-
-          <div className="prose prose-invert max-w-none space-y-10 text-white/70 leading-relaxed">
-            {/* Section 1 */}
-            <div>
-              <h2 className="text-xl font-bold text-white mb-4">1. Introduction</h2>
-              <p>
-                Business Bloom LLC ("we," "us," or "our") operates
-                businessbloomllc.com and app.businessbloomllc.com (collectively,
-                the "Services"). This Privacy Policy describes how we collect,
-                use, and protect information when you visit our website or use
-                our Services.
-              </p>
-              <p className="mt-3">
-                By using our Services, you agree to the practices described in
-                this Privacy Policy.
-              </p>
-            </div>
-
-            {/* Section 2 */}
-            <div>
-              <h2 className="text-xl font-bold text-white mb-4">2. Information We Collect</h2>
-              <p>We may collect the following types of information:</p>
-              <ul className="mt-3 space-y-2">
-                <li>
-                  <strong className="text-white">Personal Information:</strong> Name,
-                  email address, phone number, and business details provided
-                  through forms, checkout, or account registration.
-                </li>
-                <li>
-                  <strong className="text-white">Payment Information:</strong> Payment
-                  is processed securely through Stripe. We do not store full
-                  credit card numbers on our servers.
-                </li>
-                <li>
-                  <strong className="text-white">Usage Data:</strong> Information
-                  about how you interact with our website, including IP address,
-                  browser type, and pages visited.
-                </li>
-                <li>
-                  <strong className="text-white">Cookies:</strong> We may use
-                  cookies and similar technologies to improve user experience
-                  and analyze traffic.
-                </li>
-              </ul>
-            </div>
-
-            {/* Section 3 */}
-            <div>
-              <h2 className="text-xl font-bold text-white mb-4">3. How We Use Your Information</h2>
-              <p>We use collected information to:</p>
-              <ul className="mt-3 space-y-2">
-                <li>Process payments and deliver purchased products or services</li>
-                <li> Communicate with you about your account, orders, and updates</li>
-                <li>Improve our website, Services, and user experience</li>
-                <li>Send marketing communications (you may opt out at any time)</li>
-                <li>Comply with legal obligations</li>
-              </ul>
-            </div>
-
-            {/* Section 4 */}
-            <div>
-              <h2 className="text-xl font-bold text-white mb-4">4. Information Sharing</h2>
-              <p>
-                We do not sell, rent, or trade your personal information to
-                third parties. We may share information with:
-              </p>
-              <ul className="mt-3 space-y-2">
-                <li>
-                  <strong className="text-white">Payment processors</strong> (Stripe)
-                  to complete transactions
-                </li>
-                <li>
-                  <strong className="text-white">Service providers</strong> who assist
-                  in operating our website or conducting business
-                </li>
-                <li>
-                  <strong className="text-white">Legal authorities</strong> when
-                  required by law or to protect our rights
-                </li>
-              </ul>
-            </div>
-
-            {/* Section 5 */}
-            <div>
-              <h2 className="text-xl font-bold text-white mb-4">5. Data Security</h2>
-              <p>
-                We implement reasonable technical and organizational measures
-                to protect your information. However, no method of transmission
-                over the Internet or electronic storage is 100% secure. While
-                we strive to protect your data, we cannot guarantee absolute
-                security.
-              </p>
-            </div>
-
-            {/* Section 6 */}
-            <div>
-              <h2 className="text-xl font-bold text-white mb-4">6. Your Rights</h2>
-              <p>You have the right to:</p>
-              <ul className="mt-3 space-y-2">
-                <li>Access the personal information we hold about you</li>
-                <li>Request correction of inaccurate information</li>
-                <li>Request deletion of your personal information</li>
-                <li>Opt out of marketing communications</li>
-              </ul>
-              <p className="mt-3">
-                To exercise these rights, contact us through the information
-                provided on our website.
-              </p>
-            </div>
-
-            {/* Section 7 */}
-            <div>
-              <h2 className="text-xl font-bold text-white mb-4">7. Children's Privacy</h2>
-              <p>
-                Our Services are not directed to children under 13. We do not
-                knowingly collect personal information from children under 13.
-                If you believe a child has provided us with personal
-                information, please contact us.
-              </p>
-            </div>
-
-            {/* Section 8 */}
-            <div>
-              <h2 className="text-xl font-bold text-white mb-4">8. Changes to This Policy</h2>
-              <p>
-                We may update this Privacy Policy from time to time. Material
-                changes will be posted on this page with an updated revision
-                date. Continued use of our Services after changes constitutes
-                acceptance of the updated policy.
-              </p>
-            </div>
-
-            {/* Section 9 */}
-            <div>
-              <h2 className="text-xl font-bold text-white mb-4">9. Contact Us</h2>
-              <p>
-                For questions about this Privacy Policy, please reach out
-                through the contact information available on our website at
-                businessbloomllc.com.
-              </p>
-              <p className="mt-3 text-[#14B8A6] text-sm">
-                [REQUIRES OWNER/ATTORNEY REVIEW: Add official contact email,
-                mailing address, and any registered agent information once
-                confirmed.]
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
+        </section>
+      </main>
       <Footer />
     </div>
   );

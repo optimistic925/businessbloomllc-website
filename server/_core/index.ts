@@ -9,6 +9,8 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { checkoutRouter } from "../checkout";
+import { freeResourceDownloadRouter } from "../freeResourceDownloads";
+import { publicFreeResourceAttachmentRouter } from "../publicFreeResourceAttachments";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -39,8 +41,11 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   registerStorageProxy(app);
   registerOAuthRoutes(app);
-  // Checkout and domain routes
+  // Checkout and customer-safe public download routes. Register exact attachment routes
+  // before the generic /api/free-resources/:slug handler so finalized resources are not shadowed.
   app.use(checkoutRouter);
+  app.use(publicFreeResourceAttachmentRouter);
+  app.use(freeResourceDownloadRouter);
   // tRPC API
   app.use(
     "/api/trpc",

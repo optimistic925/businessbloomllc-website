@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+      content="width=device-width, initial-scale=1.0" />
     <title>Business Bloom | Launch, Fund, Automate and Grow with AI</title>
     <meta name="description" content="Business Bloom helps entrepreneurs launch, strengthen, fund, automate and grow their businesses through one AI-powered operating system." />
 
@@ -24,6 +24,18 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Preserve the authored customer-facing VET label casing in rendered output.
+      const preserveVetLabelCasing = () => {
+        for (const node of document.querySelectorAll("p")) {
+          if (node.textContent?.trim() === "Meet Your Virtual Executive Team") {
+            node.style.textTransform = "none";
+          }
+        }
+      };
+      new MutationObserver(preserveVetLabelCasing).observe(document.documentElement, { childList: true, subtree: true });
+      preserveVetLabelCasing();
+    </script>
     <script
       defer
       src="%VITE_ANALYTICS_ENDPOINT%/umami"

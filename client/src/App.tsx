@@ -16,12 +16,23 @@ import Resources from "./pages/Resources";
 import GetStarted from "./pages/GetStarted";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
+import Marketplace from "./pages/Marketplace";
+import MarketplaceProduct from "./pages/MarketplaceProduct";
+import { MarketplaceCancel, MarketplaceSuccess } from "./pages/MarketplaceCheckoutStatus";
+import About from "./pages/About";
+import Support from "./pages/Support";
 
 function Router() {
   return (
     <Switch>
       <Route path={"/"} component={Home} />
+      <Route path={"/marketplace"} component={Marketplace} />
+      <Route path={"/marketplace/success"} component={MarketplaceSuccess} />
+      <Route path={"/marketplace/cancel"} component={MarketplaceCancel} />
+      <Route path={"/marketplace/:slug"} component={MarketplaceProduct} />
       <Route path={"/solutions"} component={Solutions} />
+      <Route path={"/about"} component={About} />
+      <Route path={"/support"} component={Support} />
       <Route path={"/prompt-packs"} component={PromptPacks} />
       <Route path={"/dfy-services"} component={DfyServices} />
       <Route path={"/hosting"} component={Hosting} />
@@ -39,16 +50,7 @@ function Router() {
 }
 
 function App() {
-  return (
-    <ErrorBoundary>
-      <ThemeProvider defaultTheme="dark">
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
-      </ThemeProvider>
-    </ErrorBoundary>
-  );
+  return <ErrorBoundary><ThemeProvider defaultTheme="dark"><TooltipProvider><Toaster /><Router /></TooltipProvider></ThemeProvider></ErrorBoundary>;
 }
 
 export default App;

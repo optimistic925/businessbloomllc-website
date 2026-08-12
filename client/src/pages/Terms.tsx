@@ -2,187 +2,52 @@ import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 import { FileText } from "lucide-react";
 
-/**
- * Terms of Service — Business Bloom LLC
- *
- * This is placeholder business-policy content suitable for legal review.
- * Provisions requiring owner or attorney confirmation are labeled
- * with [REQUIRES OWNER/ATTORNEY REVIEW].
- *
- * No company addresses, specific refund periods, or governing-law
- * provisions have been invented.
- */
 export default function Terms() {
   return (
     <div className="min-h-screen bg-[#0B0F1A] text-white">
       <NavBar />
+      <main className="pt-32 pb-20">
+        <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-3 mb-8"><div className="w-12 h-12 rounded-xl bg-[#14B8A6]/10 flex items-center justify-center"><FileText className="h-6 w-6 text-[#14B8A6]" /></div><h1 className="text-3xl sm:text-4xl font-black" style={{ fontFamily: "var(--font-display)" }}>Terms of Service</h1></div>
+          <p className="text-white/40 text-sm mb-12">Last updated: August 2026</p>
 
-      <section className="relative pt-32 pb-20 overflow-hidden">
-        <div className="absolute inset-0">
-          <div className="absolute top-1/4 left-1/4 w-[400px] h-[400px] bg-[#14B8A6]/8 rounded-full blur-3xl" />
-        </div>
+          <div className="space-y-10 text-white/70 leading-relaxed">
+            <section><h2 className="text-xl font-bold text-white mb-4">1. Scope and Acceptance</h2><p>These Terms apply to use of the Business Bloom LLC website, Marketplace, digital products, Free Resources, support channels, and other Business Bloom services that reference these Terms. By using a Business Bloom service or completing a purchase, you agree to these Terms and any product-specific terms presented for that service or transaction.</p></section>
 
-        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-12 h-12 rounded-xl bg-[#14B8A6]/10 flex items-center justify-center">
-              <FileText className="h-6 w-6 text-[#14B8A6]" />
-            </div>
-            <h1
-              className="text-3xl sm:text-4xl font-black"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              Terms of Service
-            </h1>
+            <section><h2 className="text-xl font-bold text-white mb-4">2. Business Bloom Products</h2><p>Business Bloom provides digital business systems, educational and planning resources, editable tools, templates, prompts, workflows, dashboards, and related implementation materials. Specific product contents, formats, and delivery methods are described on the applicable product page or customer materials.</p></section>
+
+            <section><h2 className="text-xl font-bold text-white mb-4">3. Purchases and Payment</h2><p>Paid Marketplace transactions are processed through Stripe. You are responsible for reviewing the product description, price, billing type, and transaction-specific terms shown before completing checkout. Current Marketplace products are offered as one-time purchases unless a product page and checkout clearly state otherwise.</p></section>
+
+            <section><h2 className="text-xl font-bold text-white mb-4">4. Digital Delivery and Access</h2><p>Digital products may be delivered by download, access instructions, onboarding instructions, or a combination of these methods. You are responsible for providing a usable email address at checkout, maintaining access to that address, saving purchased files after delivery, and following customer-facing access instructions. Delivery links and access credentials are for the purchasing customer or authorized business users and may not be publicly redistributed. If expected delivery or access does not arrive or a supplied link does not work, contact Business Bloom Support so the delivery issue can be investigated and corrected.</p></section>
+
+            <section><h2 className="text-xl font-bold text-white mb-4">5. License and Permitted Use</h2><p>Unless a product-specific license states otherwise, Business Bloom digital products are licensed to the purchaser for the purchaser’s own authorized business use. Purchase does not transfer ownership of Business Bloom intellectual property. You may make reasonable working copies for authorized internal use, but you may not resell, publicly redistribute, publish, sublicense, remove ownership notices from, or represent Business Bloom materials as your own product without written authorization. Product-specific license terms control if they expressly differ from this section.</p></section>
+
+            <section><h2 className="text-xl font-bold text-white mb-4">6. Free Resources</h2><p>Free Resources may be provided at no charge for educational, diagnostic, or planning purposes. Their availability, format, and delivery method may change. Free Resources remain subject to applicable intellectual-property and use restrictions and may not be repackaged or sold as another party’s product.</p></section>
+
+            <section><h2 className="text-xl font-bold text-white mb-4">7. Professional Advice, HR, and Legal-Information Boundaries</h2><p>Business Bloom products are business-planning and educational resources. They do not replace qualified legal, tax, accounting, financial, investment, medical, HR, employment-law, regulatory, or other professional advice. HR materials are general operational tools and are not a substitute for employment-law review, required notices, or jurisdiction-specific policies. LLC, entity-formation, licensing, contract, and other legal-information materials are educational and do not create an attorney-client relationship or determine what filing, tax, legal, or regulatory action is appropriate for a specific business. Customers remain responsible for final decisions, implementation, legal obligations, and obtaining qualified professional guidance when their facts, industry, jurisdiction, transaction, workforce, or circumstances require it.</p></section>
+
+            <section><h2 className="text-xl font-bold text-white mb-4">8. AI-Assisted Materials</h2><p>Some Business Bloom products include AI-assisted workflows, prompts, or decision-support materials. AI-generated output can contain errors, omissions, fabricated facts, or unsupported statements. Review output before use, verify material claims and source information, protect confidential or sensitive information, and keep appropriate human judgment and professional review in the process. Business Bloom materials do not authorize customers to submit information to third-party AI services when they lack permission to do so.</p></section>
+
+            <section><h2 className="text-xl font-bold text-white mb-4">9. No Guaranteed Business Results or Earnings</h2><p>Business Bloom does not guarantee specific revenue, earnings, sales, funding, customer-acquisition, conversion, productivity, automation, ranking, marketing, or other business outcomes. Examples, calculations, planning scenarios, benchmarks, and projections are illustrative unless expressly identified otherwise. Results depend on the customer’s circumstances, decisions, implementation, market conditions, costs, third-party platforms, and other factors outside Business Bloom’s control.</p></section>
+
+            <section><h2 className="text-xl font-bold text-white mb-4">10. Refunds, Cancellations, and Delivery Problems</h2><p>Unless a product page or checkout states a different policy, one-time digital-product purchases are treated as final once the purchased file, access instructions, or onboarding materials have been delivered or made available, except where a refund or other remedy is required by applicable law. Business Bloom will investigate duplicate charges, incorrect product delivery, inaccessible or corrupted delivery files, and other documented fulfillment errors and may replace access, correct delivery, or provide another appropriate resolution. One-time purchases do not require cancellation. If Business Bloom later offers a recurring subscription, its price, renewal interval, cancellation method, and any trial or promotional terms must be disclosed before purchase; cancellation stops future renewals but does not retroactively convert prior paid periods into refundable periods unless the applicable offer states otherwise or law requires it.</p></section>
+
+            <section><h2 className="text-xl font-bold text-white mb-4">11. Chargebacks and Payment Disputes</h2><p>If you believe a Business Bloom charge is incorrect, contact Support with the product name, purchase email, and order or Checkout Session reference when available so the transaction can be reviewed. Do not send full card numbers, passwords, or secret credentials. Nothing in these Terms limits rights that cannot lawfully be waived.</p></section>
+
+            <section><h2 className="text-xl font-bold text-white mb-4">12. Acceptable Use</h2><p>You may not use Business Bloom services to violate law, infringe intellectual-property rights, gain unauthorized access to systems or data, interfere with service operation, distribute malicious content, bypass access controls, or misuse customer, employee, contractor, prospect, or third-party data.</p></section>
+
+            <section><h2 className="text-xl font-bold text-white mb-4">13. Third-Party Services</h2><p>Business Bloom may rely on third-party providers for payment processing, hosting, communications, workflow automation, file formats, analytics, storage, or other service functions. A third-party service may be unavailable, changed, or governed by its own terms and privacy practices. Business Bloom does not control third-party platforms and cannot guarantee their uninterrupted availability.</p></section>
+
+            <section><h2 className="text-xl font-bold text-white mb-4">14. Customer Responsibility for Implementation</h2><p>You are responsible for deciding whether a Business Bloom resource is suitable for your business; protecting credentials and confidential information; maintaining appropriate backups; obtaining permissions and consents required for your data and communications; reviewing customer-facing claims before publication; and testing workflows, calculations, automations, or configurations before relying on them in production.</p></section>
+
+            <section><h2 className="text-xl font-bold text-white mb-4">15. Intellectual Property</h2><p>Business Bloom names, product names, written materials, graphics, software, workflows, templates, and other original content remain the property of Business Bloom LLC or applicable licensors except where expressly stated otherwise. Third-party names and materials remain the property of their respective owners.</p></section>
+
+            <section><h2 className="text-xl font-bold text-white mb-4">16. Service and Terms Changes</h2><p>Business Bloom may update products, resources, website features, delivery methods, or these Terms as the business evolves. Material updates to these Terms will be reflected by an updated revision date. Changes apply prospectively unless a different effective date is stated.</p></section>
+
+            <section><h2 className="text-xl font-bold text-white mb-4">17. Contact</h2><p>For purchase, refund, delivery, access, licensing, privacy, or Terms questions, use the Business Bloom Support page. Include enough information to identify the relevant transaction or product, but do not send passwords, full card numbers, API keys, or other secrets through support requests.</p><a href="/support" className="inline-flex mt-4 text-[#14B8A6] font-semibold hover:underline">Business Bloom Support</a></section>
           </div>
-
-          <p className="text-white/40 text-sm mb-12">
-            Last updated: July 2026 · This document is a placeholder pending legal review.
-          </p>
-
-          <div className="prose prose-invert max-w-none space-y-10 text-white/70 leading-relaxed">
-            {/* Section 1 */}
-            <div>
-              <h2 className="text-xl font-bold text-white mb-4">1. Acceptance of Terms</h2>
-              <p>
-                By accessing or using the Business Bloom LLC website
-                (businessbloomllc.com), the Business Bloom Engine
-                (app.businessbloomllc.com), or any related Services, you
-                agree to be bound by these Terms of Service. If you do not
-                agree to these Terms, please do not use our Services.
-              </p>
-            </div>
-
-            {/* Section 2 */}
-            <div>
-              <h2 className="text-xl font-bold text-white mb-4">2. Description of Services</h2>
-              <p>
-                Business Bloom LLC provides business automation systems,
-                done-for-you services, hosting, domain registration, AI prompt
-                packs, and related tools for entrepreneurs and businesses. The
-                specific Services available may change over time.
-              </p>
-            </div>
-
-            {/* Section 3 */}
-            <div>
-              <h2 className="text-xl font-bold text-white mb-4">3. Purchases and Payments</h2>
-              <p>
-                Some Services require payment. Payments are processed through
-                Stripe. By making a purchase, you agree to the pricing and
-                billing terms presented at the time of checkout.
-              </p>
-              <p className="mt-3 text-[#14B8A6] text-sm">
-                [REQUIRES OWNER/ATTORNEY REVIEW: Add specific refund policy
-                period, subscription cancellation terms, and any
-                money-back guarantee details once confirmed.]
-              </p>
-            </div>
-
-            {/* Section 4 */}
-            <div>
-              <h2 className="text-xl font-bold text-white mb-4">4. Domain Registration</h2>
-              <p>
-                Domain registration services are currently being updated. When
-                available, domain purchases are subject to the terms of the
-                applicable registrar and registry. Business Bloom LLC is not
-                responsible for domain availability, registration failures, or
-                disputes over domain ownership. Domain purchases are non-refundable.
-              </p>
-              <p className="mt-3 text-[#14B8A6] text-sm">
-                [REQUIRES OWNER/ATTORNEY REVIEW: Confirm registrar partner,
-                refund terms for failed registrations, and any liability
-                limitations once the registrar integration is complete.]
-              </p>
-            </div>
-
-            {/* Section 5 */}
-            <div>
-              <h2 className="text-xl font-bold text-white mb-4">5. Intellectual Property</h2>
-              <p>
-                All content on our website, including text, graphics, logos,
-                software, and design elements, is the property of Business
-                Bloom LLC or its licensors and is protected by intellectual
-                property laws. You may not reproduce, distribute, or create
-                derivative works from our content without written permission.
-              </p>
-            </div>
-
-            {/* Section 6 */}
-            <div>
-              <h2 className="text-xl font-bold text-white mb-4">6. User Conduct</h2>
-              <p>You agree not to:</p>
-              <ul className="mt-3 space-y-2">
-                <li>Use our Services for any unlawful purpose</li>
-                <li>Attempt to gain unauthorized access to our systems or data</li>
-                <li>Interfere with the proper operation of our Services</li>
-                <li>Use our content without attribution or permission</li>
-                <li>Reproduce, resell, or redistribute our products without authorization</li>
-              </ul>
-            </div>
-
-            {/* Section 7 */}
-            <div>
-              <h2 className="text-xl font-bold text-white mb-4">7. Disclaimers</h2>
-              <p>
-                Our Services are provided "as is" and "as available." We make
-                no warranties, express or implied, regarding the reliability,
-                accuracy, or availability of our Services. We do not guarantee
-                specific business results, revenue outcomes, or funding
-                approvals.
-              </p>
-            </div>
-
-            {/* Section 8 */}
-            <div>
-              <h2 className="text-xl font-bold text-white mb-4">8. Limitation of Liability</h2>
-              <p>
-                To the maximum extent permitted by law, Business Bloom LLC
-                shall not be liable for any indirect, incidental, special,
-                consequential, or punitive damages arising from your use of
-                our Services.
-              </p>
-            </div>
-
-            {/* Section 9 */}
-            <div>
-              <h2 className="text-xl font-bold text-white mb-4">9. Third-Party Services</h2>
-              <p>
-                Our Services may integrate with or link to third-party
-                platforms (e.g., Stripe, Shopify). We are not responsible for
-                the practices or content of these third parties. Your use of
-                third-party services is subject to their respective terms.
-              </p>
-            </div>
-
-            {/* Section 10 */}
-            <div>
-              <h2 className="text-xl font-bold text-white mb-4">10. Changes to Terms</h2>
-              <p>
-                We may update these Terms from time to time. Material changes
-                will be posted on this page with an updated revision date.
-                Continued use of our Services after changes constitutes
-                acceptance of the updated Terms.
-              </p>
-            </div>
-
-            {/* Section 11 */}
-            <div>
-              <h2 className="text-xl font-bold text-white mb-4">11. Contact Us</h2>
-              <p>
-                For questions about these Terms of Service, please reach out
-                through the contact information available on our website at
-                businessbloomllc.com.
-              </p>
-              <p className="mt-3 text-[#14B8A6] text-sm">
-                [REQUIRES OWNER/ATTORNEY REVIEW: Add official contact email,
-                mailing address, governing law jurisdiction, and any dispute
-                resolution clauses once confirmed.]
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
+        </section>
+      </main>
       <Footer />
     </div>
   );
