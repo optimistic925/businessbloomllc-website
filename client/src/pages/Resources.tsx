@@ -76,7 +76,10 @@ async function downloadBrandMessageQuickCheck(deliveryUrl: string) {
     console.error("Brand Message Quick Check download failed", error);
     toast.error("We couldn't start that download. Please try again or contact support.");
   } finally {
-    if (objectUrl) window.setTimeout(() => URL.revokeObjectURL(objectUrl), 30_000);
+    if (objectUrl) {
+      const urlToRevoke = objectUrl;
+      window.setTimeout(() => URL.revokeObjectURL(urlToRevoke), 30_000);
+    }
   }
 }
 
