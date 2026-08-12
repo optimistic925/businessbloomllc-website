@@ -32,7 +32,7 @@ jobs:
       - name: Start full production build
         run: |
           mkdir -p qa-artifacts
-          nohup env NODE_ENV=production PORT=4173 node dist/index.js >/tmp/business-bloom-server.log 2>&1 &
+          nohup env NODE_ENV=production PORT=4173 STRIPE_SECRET_KEY=sk_test_rendered_qa_only node dist/index.js >/tmp/business-bloom-server.log 2>&1 &
           for i in {1..30}; do
             if curl --fail --silent http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
             sleep 1
