@@ -3,6 +3,13 @@ import {
   type FreeResourceDeliveryConfig,
 } from "./freeResourceDeliveryConfig";
 
+const CUSTOMER_SAFE_REPAIRED_URLS: Record<string, string> = {
+  "30-minute-business-reset": "/api/free-resources/30-minute-business-reset",
+  "business-systems-checklist": "/api/free-resources/business-systems-checklist",
+  "business-health-check": "/api/free-resources/business-health-check",
+  "marketing-roi-calculator": "/api/free-resources/marketing-roi-calculator",
+};
+
 const FINAL_FREE_RESOURCE_EXTENSIONS: Record<string, FreeResourceDeliveryConfig> = {
   "offer-clarity-worksheet": {
     slug: "offer-clarity-worksheet",
@@ -43,5 +50,13 @@ const FINAL_FREE_RESOURCE_EXTENSIONS: Record<string, FreeResourceDeliveryConfig>
 };
 
 export function getFreeResourceDeliveryConfig(slug: string) {
-  return FINAL_FREE_RESOURCE_EXTENSIONS[slug] ?? getExistingFreeResourceDeliveryConfig(slug);
+  const finalized = FINAL_FREE_RESOURCE_EXTENSIONS[slug];
+  if (finalized) return finalized;
+
+  const existing = getExistingFreeResourceDeliveryConfig(slug);
+  const repairedUrl = CUSTOMER_SAFE_REPAIRED_URLS[slug];
+  if (existing && repairedUrl) {
+    return { ...existing, deliveryUrl: repairedUrl, deliveryStatus: "READY" as const };
+  }
+  return existing;
 }
