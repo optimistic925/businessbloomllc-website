@@ -27,15 +27,15 @@ jobs:
           ln -s /tmp/business-bloom-rendered-qa/node_modules/playwright node_modules/playwright
           ln -s /tmp/business-bloom-rendered-qa/node_modules/playwright-core node_modules/playwright-core
           ln -s /tmp/business-bloom-rendered-qa/node_modules/axe-core node_modules/axe-core
-      - name: Start local built SPA
+      - name: Start full production build
         run: |
           mkdir -p qa-artifacts
-          nohup pnpm exec vite preview --host 127.0.0.1 --port 4173 >/tmp/business-bloom-vite.log 2>&1 &
+          nohup env NODE_ENV=production PORT=4173 node dist/index.js >/tmp/business-bloom-server.log 2>&1 &
           for i in {1..30}; do
             if curl --fail --silent http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
             sleep 1
           done
-          cat /tmp/business-bloom-vite.log
+          cat /tmp/business-bloom-server.log
           exit 1
       - name: Run rendered mobile and accessibility checks
         run: node scripts/rendered-hard-gate-qa.mjs
