@@ -21,10 +21,12 @@ router.get("/api/free-resources/brand-message-quick-check", (_req, res) => {
     return;
   }
 
-  res.setHeader("Content-Type", "application/pdf");
-  res.setHeader("Content-Disposition", `attachment; filename="${BRAND_MESSAGE_FILENAME}"`);
   res.setHeader("Cache-Control", "public, max-age=3600");
-  res.sendFile(filePath);
+  res.download(filePath, BRAND_MESSAGE_FILENAME, { headers: { "Content-Type": "application/pdf" } }, (error) => {
+    if (error && !res.headersSent) {
+      res.status(500).json({ error: "Free Resource download unavailable" });
+    }
+  });
 });
 
 export { router as publicFreeResourceAttachmentRouter };
