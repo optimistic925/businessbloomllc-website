@@ -25,7 +25,7 @@ function formatIcon(format: string) {
   return format.toLowerCase().includes("spreadsheet") ? FileSpreadsheet : FileText;
 }
 
-function downloadFreeResource(slug: string, deliveryUrl: string) {
+async function downloadFreeResource(slug: string, deliveryUrl: string) {
   try {
     const filename = FREE_RESOURCE_FILENAMES[slug];
     if (!filename) throw new Error("Download filename is not configured");
@@ -35,15 +35,31 @@ function downloadFreeResource(slug: string, deliveryUrl: string) {
       throw new Error("Free Resource destination is not an approved customer-safe URL");
     }
 
+    // Brand Message is served by an approved same-origin endpoint. Fetching it
+    // first and converting the verified response to an object URL prevents the
+    // browser from navigating away when an attachment event is delayed, while
+    // preserving the original PDF bytes and customer filename.
+    if (slug === "brand-message-quick-check") {
+      const response = await fetch(resolved.href, { credentials: "same-origin" });
+      if (!response.ok) throw new Error(`Download response failed (${response.status})`);
+      const contentType = (response.headers.get("content-type") || "").split(";")[0].toLowerCase();
+      if (contentType !== "application/pdf") throw new Error(`Unexpected download type (${contentType || "missing"})`);
+
+      const objectUrl = URL.createObjectURL(await response.blob());
+      const anchor = document.createElement("a");
+      anchor.href = objectUrl;
+      anchor.download = filename;
+      anchor.rel = "noopener";
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1500);
+      return;
+    }
+
     const anchor = document.createElement("a");
     anchor.href = resolved.href;
-    // The Brand Message resource uses an approved same-origin server endpoint
-    // whose Content-Disposition header is the download contract. Let the
-    // browser honor that attachment response directly instead of forcing a
-    // client-side filename hint on this one path.
-    if (slug !== "brand-message-quick-check") {
-      anchor.download = filename;
-    }
+    anchor.download = filename;
     anchor.rel = "noopener";
     document.body.appendChild(anchor);
     anchor.click();
@@ -86,7 +102,7 @@ export default function Resources() {
                     <h3 className="mt-5 text-xl font-bold">{resource.name}</h3>
                     <p className="mt-3 text-sm text-white/55 leading-relaxed flex-1">{delivery?.shortDescription}</p>
                     <div className="mt-5"><span className="text-2xl font-black text-[#14B8A6]">FREE</span></div>
-                    {ready ? <button type="button" onClick={() => downloadFreeResource(resource.slug, delivery!.deliveryUrl!)} className="mt-5 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#7C3AED] font-bold">{delivery?.ctaLabel} <ArrowRight className="h-4 w-4" /></button> : <button disabled className="mt-5 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-white/10 bg-white/5 text-white/40 font-bold"><LockKeyhole className="h-4 w-4" /> Temporarily unavailable</button>}
+                    {ready ? <button type="button" onClick={() => void downloadFreeResource(resource.slug, delivery!.deliveryUrl!)} className="mt-5 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#7C3AED] font-bold">{delivery?.ctaLabel} <ArrowRight className="h-4 w-4" /></button> : <button disabled className="mt-5 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-white/10 bg-white/5 text-white/40 font-bold"><LockKeyhole className="h-4 w-4" /> Temporarily unavailable</button>}
                     <div className="mt-5 pt-5 border-t border-white/10"><p className="text-xs text-white/35 uppercase tracking-wider">Go deeper</p><a href={`/marketplace/${delivery?.relatedPaidProductSlug}`} className="mt-2 inline-flex items-center gap-2 text-sm text-[#14B8A6] font-semibold">{delivery?.relatedPaidProductName} <ArrowRight className="h-4 w-4" /></a></div>
                   </article>
                 );
