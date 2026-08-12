@@ -1,11 +1,77 @@
 import { ArrowRight, FileSpreadsheet, FileText, Gift, LockKeyhole } from "lucide-react";
+import { toast } from "sonner";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 import { ALL_PUBLIC_FREE_RESOURCES } from "../../../shared/freeResources";
 import { getFreeResourceDeliveryConfig } from "../../../shared/freeResourceDeliveryConfig";
 
+const FREE_RESOURCE_FILENAMES: Record<string, string> = {
+  "30-minute-business-reset": "Business-Bloom-30-Minute-Business-Reset-Fillable.pdf",
+  "business-systems-checklist": "Business-Bloom-Business-Systems-Checklist-Fillable.pdf",
+  "business-health-check": "Business-Bloom-Business-Health-Check.xlsx",
+  "customer-service-scorecard": "Business-Bloom-Customer-Service-Scorecard.xlsx",
+  "sales-conversion-calculator": "Business-Bloom-Sales-Conversion-Calculator.xlsx",
+  "interview-scorecard": "Business-Bloom-Interview-Scorecard.xlsx",
+  "marketing-roi-calculator": "Business-Bloom-Marketing-ROI-Calculator.xlsx",
+  "sop-quick-start-template": "Business-Bloom-SOP-Quick-Start-Template.xlsx",
+  "ai-automation-opportunity-finder": "Business-Bloom-AI-Automation-Opportunity-Finder.xlsx",
+  "offer-clarity-worksheet": "Business-Bloom-Offer-Clarity-Worksheet-Fillable.pdf",
+  "brand-message-quick-check": "Business-Bloom-Brand-Message-Quick-Check-Fillable.pdf",
+  "website-conversion-checklist": "Business-Bloom-Website-Conversion-Checklist-Fillable.pdf",
+  "social-content-consistency-planner": "Business-Bloom-Social-Content-Consistency-Planner.xlsx",
+};
+
 function formatIcon(format: string) {
   return format.toLowerCase().includes("spreadsheet") ? FileSpreadsheet : FileText;
+}
+
+function dataUrlToBlob(dataUrl: string) {
+  const commaIndex = dataUrl.indexOf(",");
+  if (commaIndex < 0) throw new Error("Invalid embedded resource");
+
+  const header = dataUrl.slice(0, commaIndex);
+  const payload = dataUrl.slice(commaIndex + 1);
+  const mimeType = header.match(/^data:([^;,]+)/)?.[1] || "application/octet-stream";
+
+  if (header.includes(";base64")) {
+    const binary = atob(payload);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+    return new Blob([bytes], { type: mimeType });
+  }
+
+  return new Blob([decodeURIComponent(payload)], { type: mimeType });
+}
+
+async function downloadFreeResource(slug: string, deliveryUrl: string) {
+  try {
+    const filename = FREE_RESOURCE_FILENAMES[slug];
+    if (!filename) throw new Error("Download filename is not configured");
+
+    let blob: Blob;
+    if (deliveryUrl.startsWith("data:")) {
+      blob = dataUrlToBlob(deliveryUrl);
+    } else {
+      const response = await fetch(deliveryUrl, { credentials: "same-origin" });
+      if (!response.ok) throw new Error(`Download failed (${response.status})`);
+      blob = await response.blob();
+    }
+
+    if (!blob.size) throw new Error("The downloaded file is empty");
+
+    const objectUrl = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = objectUrl;
+    anchor.download = filename;
+    anchor.rel = "noopener";
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1500);
+  } catch (error) {
+    console.error("Free Resource download failed", error);
+    toast.error("We couldn't start that download. Please try again or contact support.");
+  }
 }
 
 export default function Resources() {
@@ -15,17 +81,18 @@ export default function Resources() {
       <main>
         <section className="pt-32 pb-18 border-b border-white/5">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#F59E0B]/30 bg-[#F59E0B]/10 text-[#F8C866] text-sm font-semibold"><Gift className="h-4 w-4" /> BUSINESS BLOOM FREE RESOURCES</span>
-            <h1 className="mt-7 text-4xl sm:text-5xl lg:text-6xl font-black leading-tight" style={{ fontFamily: "var(--font-display)" }}>Useful business tools before you buy a system.</h1>
-            <p className="mt-6 text-lg sm:text-xl text-white/60 max-w-3xl mx-auto leading-relaxed">Use a finalized Business Bloom diagnostic, checklist, calculator, scorecard, or planning resource to clarify the problem and identify a practical next step. Only verified current resources are shown here.</p>
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#F59E0B]/30 bg-[#F59E0B]/10 text-[#F8C866] text-sm font-semibold"><Gift className="h-4 w-4" /> FREE BUSINESS RESOURCES</span>
+            <h1 className="mt-7 text-4xl sm:text-5xl lg:text-6xl font-black leading-tight" style={{ fontFamily: "var(--font-display)" }}>Practical tools to help you move your business forward.</h1>
+            <p className="mt-6 text-lg sm:text-xl text-white/60 max-w-3xl mx-auto leading-relaxed">Download practical worksheets, calculators, scorecards, spreadsheets, and checklists designed to help you organize, evaluate, and improve key areas of your business without overcomplicating the process.</p>
           </div>
         </section>
 
         <section className="py-20">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
-              <div><p className="text-[#14B8A6] text-sm font-bold uppercase tracking-wider">Current finalized resources</p><h2 className="mt-2 text-3xl font-black">{ALL_PUBLIC_FREE_RESOURCES.length} verified resources</h2></div>
-              <p className="text-sm text-white/40">The broader approved library remains in production; incomplete resources are not published.</p>
+            <div className="mb-8 max-w-3xl">
+              <p className="text-[#14B8A6] text-sm font-bold uppercase tracking-wider">Start with a quick win</p>
+              <h2 className="mt-2 text-3xl font-black">Choose the resource that matches your next business priority.</h2>
+              <p className="mt-3 text-sm text-white/50">Each resource is free to download and designed to give you a focused next step you can use right away.</p>
             </div>
 
             <div className="grid md:grid-cols-3 gap-6">
@@ -39,8 +106,8 @@ export default function Resources() {
                     <h3 className="mt-5 text-xl font-bold">{resource.name}</h3>
                     <p className="mt-3 text-sm text-white/55 leading-relaxed flex-1">{delivery?.shortDescription}</p>
                     <div className="mt-5"><span className="text-2xl font-black text-[#14B8A6]">FREE</span></div>
-                    {ready ? <a href={delivery!.deliveryUrl!} className="mt-5 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#7C3AED] font-bold">{delivery?.ctaLabel} <ArrowRight className="h-4 w-4" /></a> : <button disabled className="mt-5 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-white/10 bg-white/5 text-white/40 font-bold"><LockKeyhole className="h-4 w-4" /> Delivery finalization in progress</button>}
-                    <div className="mt-5 pt-5 border-t border-white/10"><p className="text-xs text-white/35 uppercase tracking-wider">Related next step</p><a href={`/marketplace/${delivery?.relatedPaidProductSlug}`} className="mt-2 inline-flex items-center gap-2 text-sm text-[#14B8A6] font-semibold">{delivery?.relatedPaidProductName} <ArrowRight className="h-4 w-4" /></a></div>
+                    {ready ? <button type="button" onClick={() => void downloadFreeResource(resource.slug, delivery!.deliveryUrl!)} className="mt-5 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#7C3AED] font-bold">{delivery?.ctaLabel} <ArrowRight className="h-4 w-4" /></button> : <button disabled className="mt-5 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-white/10 bg-white/5 text-white/40 font-bold"><LockKeyhole className="h-4 w-4" /> Temporarily unavailable</button>}
+                    <div className="mt-5 pt-5 border-t border-white/10"><p className="text-xs text-white/35 uppercase tracking-wider">Go deeper</p><a href={`/marketplace/${delivery?.relatedPaidProductSlug}`} className="mt-2 inline-flex items-center gap-2 text-sm text-[#14B8A6] font-semibold">{delivery?.relatedPaidProductName} <ArrowRight className="h-4 w-4" /></a></div>
                   </article>
                 );
               })}
@@ -49,7 +116,7 @@ export default function Resources() {
         </section>
 
         <section className="py-20 border-t border-white/5">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center"><h2 className="text-3xl sm:text-4xl font-black">Need more than a quick diagnostic?</h2><p className="mt-4 text-white/60">Explore the Marketplace when you are ready for a complete Business Bloom system, or contact Support if you have a question about which current resource or product fits your situation.</p><div className="mt-8 flex flex-col sm:flex-row justify-center gap-4"><a href="/marketplace" className="px-7 py-4 rounded-xl bg-[#7C3AED] font-bold">Shop Marketplace</a><a href="/support" className="px-7 py-4 rounded-xl border border-white/10 font-bold">Business Bloom Support</a></div></div>
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center"><h2 className="text-3xl sm:text-4xl font-black">Need more than a quick diagnostic?</h2><p className="mt-4 text-white/60">Explore the Marketplace when you are ready for a complete Business Bloom system, or contact Support if you have a question about which resource or product fits your situation.</p><div className="mt-8 flex flex-col sm:flex-row justify-center gap-4"><a href="/marketplace" className="px-7 py-4 rounded-xl bg-[#7C3AED] font-bold">Shop Marketplace</a><a href="/support" className="px-7 py-4 rounded-xl border border-white/10 font-bold">Business Bloom Support</a></div></div>
         </section>
       </main>
       <Footer />
