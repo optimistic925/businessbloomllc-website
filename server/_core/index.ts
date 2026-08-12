@@ -10,6 +10,7 @@ import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { checkoutRouter } from "../checkout";
 import { freeResourceDownloadRouter } from "../freeResourceDownloads";
+import { publicFreeResourceAttachmentRouter } from "../publicFreeResourceAttachments";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -43,6 +44,7 @@ async function startServer() {
   // Checkout and customer-safe public download routes
   app.use(checkoutRouter);
   app.use(freeResourceDownloadRouter);
+  app.use(publicFreeResourceAttachmentRouter);
   // tRPC API
   app.use(
     "/api/trpc",
