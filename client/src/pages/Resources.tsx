@@ -82,11 +82,7 @@ export default function Resources() {
                     <p className="mt-3 text-sm text-white/55 leading-relaxed flex-1">{delivery?.shortDescription}</p>
                     <div className="mt-5"><span className="text-2xl font-black text-[#14B8A6]">FREE</span></div>
                     {ready ? (
-                      resource.slug === "brand-message-quick-check" ? (
-                        <a role="button" href={delivery!.deliveryUrl!} download={FREE_RESOURCE_FILENAMES[resource.slug]} className={buttonClass}>{delivery?.ctaLabel} <ArrowRight className="h-4 w-4" /></a>
-                      ) : (
-                        <button type="button" onClick={() => downloadFreeResource(resource.slug, delivery!.deliveryUrl!)} className={buttonClass}>{delivery?.ctaLabel} <ArrowRight className="h-4 w-4" /></button>
-                      )
+                      <button type="button" onClick={() => downloadFreeResource(resource.slug, delivery!.deliveryUrl!)} className={buttonClass}>{delivery?.ctaLabel} <ArrowRight className="h-4 w-4" /></button>
                     ) : <button disabled className="mt-5 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-white/10 bg-white/5 text-white/40 font-bold"><LockKeyhole className="h-4 w-4" /> Temporarily unavailable</button>}
                     <div className="mt-5 pt-5 border-t border-white/10"><p className="text-xs text-white/35 uppercase tracking-wider">Go deeper</p><a href={`/marketplace/${delivery?.relatedPaidProductSlug}`} className="mt-2 inline-flex items-center gap-2 text-sm text-[#14B8A6] font-semibold">{delivery?.relatedPaidProductName} <ArrowRight className="h-4 w-4" /></a></div>
                   </article>
