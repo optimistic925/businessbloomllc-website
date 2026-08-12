@@ -37,7 +37,13 @@ function downloadFreeResource(slug: string, deliveryUrl: string) {
 
     const anchor = document.createElement("a");
     anchor.href = resolved.href;
-    anchor.download = filename;
+    // The Brand Message resource uses an approved same-origin server endpoint
+    // whose Content-Disposition header is the download contract. Let the
+    // browser honor that attachment response directly instead of forcing a
+    // client-side filename hint on this one path.
+    if (slug !== "brand-message-quick-check") {
+      anchor.download = filename;
+    }
     anchor.rel = "noopener";
     document.body.appendChild(anchor);
     anchor.click();
