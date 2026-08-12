@@ -25,16 +25,20 @@ function formatIcon(format: string) {
   return format.toLowerCase().includes("spreadsheet") ? FileSpreadsheet : FileText;
 }
 
+function resolveCustomerSafeUrl(deliveryUrl: string) {
+  const resolved = new URL(deliveryUrl, window.location.origin);
+  if (!/^https?:$/.test(resolved.protocol) || resolved.origin !== window.location.origin) {
+    throw new Error("Free Resource destination is not an approved customer-safe URL");
+  }
+  return resolved;
+}
+
 function downloadFreeResource(slug: string, deliveryUrl: string) {
   try {
     const filename = FREE_RESOURCE_FILENAMES[slug];
     if (!filename) throw new Error("Download filename is not configured");
 
-    const resolved = new URL(deliveryUrl, window.location.origin);
-    if (!/^https?:$/.test(resolved.protocol) || resolved.origin !== window.location.origin) {
-      throw new Error("Free Resource destination is not an approved customer-safe URL");
-    }
-
+    const resolved = resolveCustomerSafeUrl(deliveryUrl);
     const anchor = document.createElement("a");
     anchor.href = resolved.href;
     anchor.download = filename;
@@ -45,6 +49,34 @@ function downloadFreeResource(slug: string, deliveryUrl: string) {
   } catch (error) {
     console.error("Free Resource download failed", error);
     toast.error("We couldn't start that download. Please try again or contact support.");
+  }
+}
+
+async function downloadBrandMessageQuickCheck(deliveryUrl: string) {
+  let objectUrl: string | null = null;
+  try {
+    const filename = FREE_RESOURCE_FILENAMES["brand-message-quick-check"];
+    const resolved = resolveCustomerSafeUrl(deliveryUrl);
+    const response = await fetch(resolved.href, { credentials: "same-origin" });
+    if (!response.ok) throw new Error(`Free Resource request failed with HTTP ${response.status}`);
+
+    const contentType = (response.headers.get("content-type") || "").split(";")[0].toLowerCase();
+    if (contentType !== "application/pdf") throw new Error(`Unexpected Free Resource MIME type: ${contentType || "missing"}`);
+
+    const blob = await response.blob();
+    objectUrl = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = objectUrl;
+    anchor.download = filename;
+    anchor.rel = "noopener";
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+  } catch (error) {
+    console.error("Brand Message Quick Check download failed", error);
+    toast.error("We couldn't start that download. Please try again or contact support.");
+  } finally {
+    if (objectUrl) window.setTimeout(() => URL.revokeObjectURL(objectUrl), 30_000);
   }
 }
 
@@ -82,11 +114,15 @@ export default function Resources() {
                     <p className="mt-3 text-sm text-white/55 leading-relaxed flex-1">{delivery?.shortDescription}</p>
                     <div className="mt-5"><span className="text-2xl font-black text-[#14B8A6]">FREE</span></div>
                     {ready ? (
-                      resource.slug === "brand-message-quick-check" ? (
-                        <a role="button" href={delivery!.deliveryUrl!} download={FREE_RESOURCE_FILENAMES[resource.slug]} rel="noopener" className={buttonClass}>{delivery?.ctaLabel} <ArrowRight className="h-4 w-4" /></a>
-                      ) : (
-                        <button type="button" onClick={() => downloadFreeResource(resource.slug, delivery!.deliveryUrl!)} className={buttonClass}>{delivery?.ctaLabel} <ArrowRight className="h-4 w-4" /></button>
-                      )
+                      <button
+                        type="button"
+                        onClick={() => resource.slug === "brand-message-quick-check"
+                          ? void downloadBrandMessageQuickCheck(delivery!.deliveryUrl!)
+                          : downloadFreeResource(resource.slug, delivery!.deliveryUrl!)}
+                        className={buttonClass}
+                      >
+                        {delivery?.ctaLabel} <ArrowRight className="h-4 w-4" />
+                      </button>
                     ) : <button disabled className="mt-5 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-white/10 bg-white/5 text-white/40 font-bold"><LockKeyhole className="h-4 w-4" /> Temporarily unavailable</button>}
                     <div className="mt-5 pt-5 border-t border-white/10"><p className="text-xs text-white/35 uppercase tracking-wider">Go deeper</p><a href={`/marketplace/${delivery?.relatedPaidProductSlug}`} className="mt-2 inline-flex items-center gap-2 text-sm text-[#14B8A6] font-semibold">{delivery?.relatedPaidProductName} <ArrowRight className="h-4 w-4" /></a></div>
                   </article>
