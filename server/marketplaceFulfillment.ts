@@ -1,4 +1,5 @@
 import type { MarketplaceProduct } from "../shared/marketplaceProducts";
+import { MARKETPLACE_PAID_DELIVERY_REGISTRY } from "./marketplaceDeliveryRegistry";
 
 export interface MarketplaceFulfillmentDestination {
   downloadUrl: string | null;
@@ -44,16 +45,19 @@ function normalizeCustomerUrl(value: unknown): string | null {
 }
 
 function readDeliveryRegistry(): Record<string, RawDestination> {
+  const productionRegistry = MARKETPLACE_PAID_DELIVERY_REGISTRY as unknown as Record<string, RawDestination>;
   const raw = process.env.MARKETPLACE_DELIVERY_CONFIG_JSON;
-  if (!raw) return {};
+  if (!raw) return productionRegistry;
 
   try {
     const parsed = JSON.parse(raw);
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
-    return parsed as Record<string, RawDestination>;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return productionRegistry;
+    // Environment values are an explicit server-side override for emergency
+    // rotation/testing. They never originate from the browser.
+    return { ...productionRegistry, ...(parsed as Record<string, RawDestination>) };
   } catch {
     console.error("[Marketplace Fulfillment] MARKETPLACE_DELIVERY_CONFIG_JSON is invalid JSON");
-    return {};
+    return productionRegistry;
   }
 }
 
