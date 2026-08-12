@@ -26,7 +26,7 @@ const FINAL_FREE_RESOURCE_EXTENSIONS: Record<string, FreeResourceDeliveryConfig>
     ctaLabel: "Download Free",
     relatedPaidProductSlug: "business-bloom-branding-system",
     relatedPaidProductName: "Business Bloom Branding System",
-    deliveryUrl: "/api/free-resources/brand-message-quick-check",
+    deliveryUrl: "/downloads/free-resources/Business-Bloom-Brand-Message-Quick-Check-Fillable.pdf",
     deliveryStatus: "READY",
   },
   "website-conversion-checklist": {
