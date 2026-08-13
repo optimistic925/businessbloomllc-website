@@ -1,6 +1,8 @@
 name: Rendered Hard-Gate QA
 
 on:
+  push:
+    branches: [main]
   pull_request:
     branches: [main]
 
