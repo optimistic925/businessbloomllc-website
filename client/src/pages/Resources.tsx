@@ -52,37 +52,6 @@ function downloadFreeResource(slug: string, deliveryUrl: string) {
   }
 }
 
-async function downloadBrandMessageQuickCheck(deliveryUrl: string) {
-  let objectUrl: string | null = null;
-  try {
-    const filename = FREE_RESOURCE_FILENAMES["brand-message-quick-check"];
-    const resolved = resolveCustomerSafeUrl(deliveryUrl);
-    const response = await fetch(resolved.href, { credentials: "same-origin" });
-    if (!response.ok) throw new Error(`Free Resource request failed with HTTP ${response.status}`);
-
-    const contentType = (response.headers.get("content-type") || "").split(";")[0].toLowerCase();
-    if (contentType !== "application/pdf") throw new Error(`Unexpected Free Resource MIME type: ${contentType || "missing"}`);
-
-    const blob = await response.blob();
-    objectUrl = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = objectUrl;
-    anchor.download = filename;
-    anchor.rel = "noopener";
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
-  } catch (error) {
-    console.error("Brand Message Quick Check download failed", error);
-    toast.error("We couldn't start that download. Please try again or contact support.");
-  } finally {
-    if (objectUrl) {
-      const urlToRevoke = objectUrl;
-      window.setTimeout(() => URL.revokeObjectURL(urlToRevoke), 30_000);
-    }
-  }
-}
-
 export default function Resources() {
   return (
     <div className="min-h-screen bg-[#0B0F1A] text-white overflow-x-hidden">
@@ -119,9 +88,7 @@ export default function Resources() {
                     {ready ? (
                       <button
                         type="button"
-                        onClick={() => resource.slug === "brand-message-quick-check"
-                          ? void downloadBrandMessageQuickCheck(delivery!.deliveryUrl!)
-                          : downloadFreeResource(resource.slug, delivery!.deliveryUrl!)}
+                        onClick={() => downloadFreeResource(resource.slug, delivery!.deliveryUrl!)}
                         className={buttonClass}
                       >
                         {delivery?.ctaLabel} <ArrowRight className="h-4 w-4" />
