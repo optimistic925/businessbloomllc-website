@@ -3,6 +3,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
+import SeoManager from "./components/SeoManager";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import Domains from "./pages/Domains";
@@ -24,28 +25,31 @@ import Support from "./pages/Support";
 
 function Router() {
   return (
-    <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/marketplace"} component={Marketplace} />
-      <Route path={"/marketplace/success"} component={MarketplaceSuccess} />
-      <Route path={"/marketplace/cancel"} component={MarketplaceCancel} />
-      <Route path={"/marketplace/:slug"} component={MarketplaceProduct} />
-      <Route path={"/solutions"} component={Solutions} />
-      <Route path={"/about"} component={About} />
-      <Route path={"/support"} component={Support} />
-      <Route path={"/prompt-packs"} component={PromptPacks} />
-      <Route path={"/dfy-services"} component={DfyServices} />
-      <Route path={"/hosting"} component={Hosting} />
-      <Route path={"/domains"} component={Domains} />
-      <Route path={"/shopify-app"} component={ShopifyApp} />
-      <Route path={"/free-shopify-store"} component={FreeShopifyStore} />
-      <Route path={"/resources"} component={Resources} />
-      <Route path={"/get-started"} component={GetStarted} />
-      <Route path={"/privacy"} component={Privacy} />
-      <Route path={"/terms"} component={Terms} />
-      <Route path={"/404"} component={NotFound} />
-      <Route component={NotFound} />
-    </Switch>
+    <>
+      <SeoManager />
+      <Switch>
+        <Route path={"/"} component={Home} />
+        <Route path={"/marketplace"} component={Marketplace} />
+        <Route path={"/marketplace/success"} component={MarketplaceSuccess} />
+        <Route path={"/marketplace/cancel"} component={MarketplaceCancel} />
+        <Route path={"/marketplace/:slug"} component={MarketplaceProduct} />
+        <Route path={"/solutions"} component={Solutions} />
+        <Route path={"/about"} component={About} />
+        <Route path={"/support"} component={Support} />
+        <Route path={"/prompt-packs"} component={PromptPacks} />
+        <Route path={"/dfy-services"} component={DfyServices} />
+        <Route path={"/hosting"} component={Hosting} />
+        <Route path={"/domains"} component={Domains} />
+        <Route path={"/shopify-app"} component={ShopifyApp} />
+        <Route path={"/free-shopify-store"} component={FreeShopifyStore} />
+        <Route path={"/resources"} component={Resources} />
+        <Route path={"/get-started"} component={GetStarted} />
+        <Route path={"/privacy"} component={Privacy} />
+        <Route path={"/terms"} component={Terms} />
+        <Route path={"/404"} component={NotFound} />
+        <Route component={NotFound} />
+      </Switch>
+    </>
   );
 }
 
