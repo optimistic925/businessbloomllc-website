@@ -45,7 +45,7 @@ function downloadFreeResource(slug: string, deliveryUrl: string) {
     anchor.rel = "noopener";
     document.body.appendChild(anchor);
     anchor.click();
-    anchor.remove();
+    window.setTimeout(() => anchor.remove(), 1_000);
   } catch (error) {
     console.error("Free Resource download failed", error);
     toast.error("We couldn't start that download. Please try again or contact support.");
