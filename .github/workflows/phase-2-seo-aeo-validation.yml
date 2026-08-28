@@ -65,6 +65,11 @@ jobs:
         continue-on-error: true
         run: node scripts/rendered-hard-gate-qa.mjs
 
+      - name: Isolated Brand Message download diagnostic
+        id: isolated_brand_download
+        continue-on-error: true
+        run: node scripts/brand-download-isolated-validation.mjs
+
       - name: Route metadata / canonical / robots / sitemap / structured-data QA
         id: seo_aeo_gate
         continue-on-error: true
@@ -81,8 +86,15 @@ jobs:
       - name: Enforce all validation gates
         if: always()
         run: |
+          echo "rendered_hard_gate=${{ steps.rendered_hard_gate.outcome }}"
+          echo "isolated_brand_download=${{ steps.isolated_brand_download.outcome }}"
+          echo "seo_aeo_gate=${{ steps.seo_aeo_gate.outcome }}"
           if [ "${{ steps.rendered_hard_gate.outcome }}" != "success" ]; then
             echo "Rendered hard-gate QA failed"
+            exit 1
+          fi
+          if [ "${{ steps.isolated_brand_download.outcome }}" != "success" ]; then
+            echo "Isolated Brand Message download validation failed"
             exit 1
           fi
           if [ "${{ steps.seo_aeo_gate.outcome }}" != "success" ]; then
