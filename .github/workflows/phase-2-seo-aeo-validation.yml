@@ -61,9 +61,13 @@ jobs:
           exit 1
 
       - name: Existing rendered hard-gate QA
+        id: rendered_hard_gate
+        continue-on-error: true
         run: node scripts/rendered-hard-gate-qa.mjs
 
       - name: Route metadata / canonical / robots / sitemap / structured-data QA
+        id: seo_aeo_gate
+        continue-on-error: true
         run: node scripts/seo-aeo-validation.mjs
 
       - name: Upload QA screenshots
@@ -73,3 +77,16 @@ jobs:
           name: phase-2-seo-aeo-qa
           path: qa-artifacts
           if-no-files-found: warn
+
+      - name: Enforce all validation gates
+        if: always()
+        run: |
+          if [ "${{ steps.rendered_hard_gate.outcome }}" != "success" ]; then
+            echo "Rendered hard-gate QA failed"
+            exit 1
+          fi
+          if [ "${{ steps.seo_aeo_gate.outcome }}" != "success" ]; then
+            echo "SEO/AEO route validation failed"
+            exit 1
+          fi
+          echo "All Phase 2 validation gates passed"
