@@ -155,90 +155,104 @@ for (const viewport of viewports) {
 }
 
 for (const viewport of viewports.filter((item) => item.name === "mobile" || item.name === "desktop")) {
-  const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, acceptDownloads: true });
-  const page = await context.newPage();
-  const response = await page.goto(`${base}/resources`, { waitUntil: "networkidle" });
-  if (!response || response.status() >= 400) {
+  const inspectionContext = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, acceptDownloads: true });
+  const inspectionPage = await inspectionContext.newPage();
+  const inspectionResponse = await inspectionPage.goto(`${base}/resources`, { waitUntil: "networkidle" });
+  if (!inspectionResponse || inspectionResponse.status() >= 400) {
     failures.push(`${viewport.name} /resources download QA: navigation failed`);
-    await context.close();
+    await inspectionContext.close();
     continue;
   }
 
-  const html = await page.content();
+  const html = await inspectionPage.content();
   for (const forbidden of ["drive.google.com", "docs.google.com", "r2.dev", "Internal-Do-Not-Distribute", "MARKETPLACE_DOWNLOAD_SIGNING_SECRET", "DOWNLOAD_SIGNING_SECRET"]) {
     if (html.includes(forbidden)) failures.push(`${viewport.name} /resources: exposed forbidden customer path or credential marker ${forbidden}`);
   }
+  await inspectionContext.close();
 
+  // Use a fresh browser context for each download. Chromium can throttle or suppress
+  // repeated automatic downloads in a long-lived page, which can create false failures
+  // unrelated to the resource, destination, MIME type, security, or file integrity.
   for (const [resourceName, expectedFilename, kind, contentMarker] of freeResources) {
     const matrixRow = { resource: resourceName, format: kind.toUpperCase(), action: "Download Free", destinationType: "unknown", filename: "", mimeType: "", viewport: viewport.name, security: "PASS", result: "FAIL" };
     const rowFailures = [];
-    const card = page.locator("article").filter({ hasText: resourceName });
-    const button = card.getByRole("button", { name: /Download Free/i });
-    if (await button.count() !== 1) {
-      rowFailures.push("expected one Download Free button");
-    } else {
-      const beforeUrl = page.url();
-      try {
-        const [download] = await Promise.all([page.waitForEvent("download", { timeout: 10000 }), button.click()]);
-        const afterUrl = page.url();
-        const downloadUrl = download.url();
-        matrixRow.filename = download.suggestedFilename();
+    const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, acceptDownloads: true });
+    const page = await context.newPage();
 
-        if (afterUrl !== beforeUrl) rowFailures.push(`download navigated page to ${afterUrl}`);
-        if (afterUrl.startsWith("data:")) rowFailures.push("top-level data URL navigation detected");
-        if (!afterUrl.startsWith("http://") && !afterUrl.startsWith("https://")) rowFailures.push(`customer left usable website state: ${afterUrl}`);
-
-        if (downloadUrl.startsWith("blob:")) {
-          matrixRow.destinationType = "Blob/object URL";
-        } else if (/^https?:/.test(downloadUrl)) {
-          matrixRow.destinationType = "customer-safe HTTPS";
-          const parsed = new URL(downloadUrl);
-          const expectedOrigin = new URL(base).origin;
-          if (parsed.origin !== expectedOrigin) rowFailures.push(`cross-origin download destination ${parsed.origin}`);
-          if (!(parsed.pathname.startsWith("/downloads/free-resources/") || parsed.pathname.startsWith("/api/free-resources/"))) rowFailures.push(`unapproved download path ${parsed.pathname}`);
-          if (["drive.google.com", "docs.google.com"].includes(parsed.hostname) || parsed.hostname.endsWith("r2.dev")) rowFailures.push(`forbidden download host ${parsed.hostname}`);
-          const direct = await context.request.get(downloadUrl);
-          if (!direct.ok()) rowFailures.push(`download response HTTP ${direct.status()}`);
-          const contentType = (direct.headers()["content-type"] || "").split(";")[0].toLowerCase();
-          matrixRow.mimeType = contentType;
-          const expectedMime = kind === "pdf" ? PDF_MIME : XLSX_MIME;
-          if (contentType !== expectedMime) rowFailures.push(`MIME ${contentType || "missing"} != ${expectedMime}`);
-          const disposition = direct.headers()["content-disposition"] || "";
-          if (parsed.pathname.startsWith("/api/free-resources/") && !disposition.includes(expectedFilename)) rowFailures.push(`Content-Disposition missing filename ${expectedFilename}`);
+    try {
+      const response = await page.goto(`${base}/resources`, { waitUntil: "networkidle" });
+      if (!response || response.status() >= 400) {
+        rowFailures.push(`resources navigation failed with status ${response?.status() ?? "none"}`);
+      } else {
+        const card = page.locator("article").filter({ hasText: resourceName });
+        const button = card.getByRole("button", { name: /Download Free/i });
+        if (await button.count() !== 1) {
+          rowFailures.push("expected one Download Free button");
         } else {
-          matrixRow.destinationType = downloadUrl.split(":")[0] || "unknown";
-          rowFailures.push(`unapproved destination type ${matrixRow.destinationType}`);
-        }
-        if (downloadUrl.startsWith("data:")) rowFailures.push("data URL download destination detected");
-        if (/drive\.google\.com|docs\.google\.com|r2\.dev|Internal-Do-Not-Distribute/i.test(downloadUrl)) rowFailures.push("private/internal destination exposed");
-        if (/secret|credential|token=/i.test(downloadUrl)) rowFailures.push("credential-like material exposed in destination");
-        if (download.suggestedFilename() !== expectedFilename) rowFailures.push(`filename ${download.suggestedFilename()} != ${expectedFilename}`);
+          const beforeUrl = page.url();
+          const [download] = await Promise.all([page.waitForEvent("download", { timeout: 10000 }), button.click()]);
+          const afterUrl = page.url();
+          const downloadUrl = download.url();
+          matrixRow.filename = download.suggestedFilename();
 
-        const path = await download.path();
-        if (!path) {
-          rowFailures.push("downloaded file path unavailable");
-        } else {
-          const bytes = await readFile(path);
-          if (bytes.length < 500) rowFailures.push(`downloaded file unexpectedly small (${bytes.length} bytes)`);
-          if (kind === "pdf") {
-            if (bytes.subarray(0, 5).toString("ascii") !== "%PDF-") rowFailures.push("invalid PDF signature");
-            if (!bytes.subarray(Math.max(0, bytes.length - 2048)).toString("latin1").includes("%%EOF")) rowFailures.push("PDF EOF marker missing");
-            const text = spawnSync("pdftotext", [path, "-"], { encoding: "utf8" });
-            if (text.status !== 0) rowFailures.push("PDF failed to open/extract with pdftotext");
-            if (!text.stdout.toUpperCase().includes(contentMarker)) rowFailures.push(`PDF intended content marker '${contentMarker}' missing`);
+          if (afterUrl !== beforeUrl) rowFailures.push(`download navigated page to ${afterUrl}`);
+          if (afterUrl.startsWith("data:")) rowFailures.push("top-level data URL navigation detected");
+          if (!afterUrl.startsWith("http://") && !afterUrl.startsWith("https://")) rowFailures.push(`customer left usable website state: ${afterUrl}`);
+
+          if (downloadUrl.startsWith("blob:")) {
+            matrixRow.destinationType = "Blob/object URL";
+          } else if (/^https?:/.test(downloadUrl)) {
+            matrixRow.destinationType = "customer-safe HTTPS";
+            const parsed = new URL(downloadUrl);
+            const expectedOrigin = new URL(base).origin;
+            if (parsed.origin !== expectedOrigin) rowFailures.push(`cross-origin download destination ${parsed.origin}`);
+            if (!(parsed.pathname.startsWith("/downloads/free-resources/") || parsed.pathname.startsWith("/api/free-resources/"))) rowFailures.push(`unapproved download path ${parsed.pathname}`);
+            if (["drive.google.com", "docs.google.com"].includes(parsed.hostname) || parsed.hostname.endsWith("r2.dev")) rowFailures.push(`forbidden download host ${parsed.hostname}`);
+            const direct = await context.request.get(downloadUrl);
+            if (!direct.ok()) rowFailures.push(`download response HTTP ${direct.status()}`);
+            const contentType = (direct.headers()["content-type"] || "").split(";")[0].toLowerCase();
+            matrixRow.mimeType = contentType;
+            const expectedMime = kind === "pdf" ? PDF_MIME : XLSX_MIME;
+            if (contentType !== expectedMime) rowFailures.push(`MIME ${contentType || "missing"} != ${expectedMime}`);
+            const disposition = direct.headers()["content-disposition"] || "";
+            if (parsed.pathname.startsWith("/api/free-resources/") && !disposition.includes(expectedFilename)) rowFailures.push(`Content-Disposition missing filename ${expectedFilename}`);
           } else {
-            if (bytes.subarray(0, 2).toString("ascii") !== "PK") rowFailures.push("invalid XLSX ZIP signature");
-            const zipTest = spawnSync("unzip", ["-t", path], { encoding: "utf8" });
-            if (zipTest.status !== 0) rowFailures.push("XLSX ZIP integrity test failed");
-            const workbook = spawnSync("unzip", ["-p", path, "xl/workbook.xml"], { encoding: "utf8" });
-            if (workbook.status !== 0 || !workbook.stdout.includes("<workbook")) rowFailures.push("XLSX workbook content missing");
-            const workbookText = spawnSync("unzip", ["-p", path, "xl/*.xml"], { encoding: "utf8", maxBuffer: 10 * 1024 * 1024 });
-            if (!workbookText.stdout.toUpperCase().includes(contentMarker)) rowFailures.push(`XLSX intended content marker '${contentMarker}' missing`);
+            matrixRow.destinationType = downloadUrl.split(":")[0] || "unknown";
+            rowFailures.push(`unapproved destination type ${matrixRow.destinationType}`);
+          }
+          if (downloadUrl.startsWith("data:")) rowFailures.push("data URL download destination detected");
+          if (/drive\.google\.com|docs\.google\.com|r2\.dev|Internal-Do-Not-Distribute/i.test(downloadUrl)) rowFailures.push("private/internal destination exposed");
+          if (/secret|credential|token=/i.test(downloadUrl)) rowFailures.push("credential-like material exposed in destination");
+          if (download.suggestedFilename() !== expectedFilename) rowFailures.push(`filename ${download.suggestedFilename()} != ${expectedFilename}`);
+
+          const path = await download.path();
+          if (!path) {
+            rowFailures.push("downloaded file path unavailable");
+          } else {
+            const bytes = await readFile(path);
+            if (bytes.length < 500) rowFailures.push(`downloaded file unexpectedly small (${bytes.length} bytes)`);
+            if (kind === "pdf") {
+              if (bytes.subarray(0, 5).toString("ascii") !== "%PDF-") rowFailures.push("invalid PDF signature");
+              if (!bytes.subarray(Math.max(0, bytes.length - 2048)).toString("latin1").includes("%%EOF")) rowFailures.push("PDF EOF marker missing");
+              const text = spawnSync("pdftotext", [path, "-"], { encoding: "utf8" });
+              if (text.status !== 0) rowFailures.push("PDF failed to open/extract with pdftotext");
+              if (!text.stdout.toUpperCase().includes(contentMarker)) rowFailures.push(`PDF intended content marker '${contentMarker}' missing`);
+            } else {
+              if (bytes.subarray(0, 2).toString("ascii") !== "PK") rowFailures.push("invalid XLSX ZIP signature");
+              const zipTest = spawnSync("unzip", ["-t", path], { encoding: "utf8" });
+              if (zipTest.status !== 0) rowFailures.push("XLSX ZIP integrity test failed");
+              const workbook = spawnSync("unzip", ["-p", path, "xl/workbook.xml"], { encoding: "utf8" });
+              if (workbook.status !== 0 || !workbook.stdout.includes("<workbook")) rowFailures.push("XLSX workbook content missing");
+              const workbookText = spawnSync("unzip", ["-p", path, "xl/*.xml"], { encoding: "utf8", maxBuffer: 10 * 1024 * 1024 });
+              if (!workbookText.stdout.toUpperCase().includes(contentMarker)) rowFailures.push(`XLSX intended content marker '${contentMarker}' missing`);
+            }
           }
         }
-      } catch (error) {
-        rowFailures.push(`download interaction failed (${error.message})`);
       }
+    } catch (error) {
+      rowFailures.push(`download interaction failed (${error.message})`);
+    } finally {
+      await context.close();
     }
 
     if (rowFailures.length === 0) matrixRow.result = "PASS";
@@ -248,8 +262,6 @@ for (const viewport of viewports.filter((item) => item.name === "mobile" || item
     }
     downloadMatrix.push(matrixRow);
   }
-
-  await context.close();
 }
 
 await browser.close();
