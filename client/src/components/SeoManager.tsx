@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useLocation } from "wouter";
+import { PUBLIC_MARKETPLACE_PRODUCTS } from "../../../shared/marketplacePublicCatalog";
 
 const SITE_URL = "https://businessbloomllc.com";
 const DEFAULT_TITLE = "Business Bloom | Launch, Fund, Automate and Grow with AI";
@@ -35,6 +36,14 @@ const routeMetadata: Record<string, { title: string; description: string }> = {
     title: "Business Bloom Marketplace | Digital Business Resources",
     description:
       "Browse Business Bloom digital products and practical resources designed to help entrepreneurs launch, operate and grow more efficiently.",
+  },
+  "/marketplace/success": {
+    title: "Marketplace Order Confirmation | Business Bloom",
+    description: "Review your Business Bloom marketplace order confirmation and next-step information.",
+  },
+  "/marketplace/cancel": {
+    title: "Marketplace Checkout Canceled | Business Bloom",
+    description: "Return to the Business Bloom marketplace after a canceled checkout session.",
   },
   "/prompt-packs": {
     title: "AI Prompt Packs for Business | Business Bloom",
@@ -78,6 +87,10 @@ const routeMetadata: Record<string, { title: string; description: string }> = {
     title: "Terms of Service | Business Bloom",
     description: "Read the Business Bloom terms of service.",
   },
+  "/404": {
+    title: "Page Not Found | Business Bloom",
+    description: "The requested Business Bloom page could not be found.",
+  },
 };
 
 function setMeta(selector: string, attribute: "name" | "property", key: string, content: string) {
@@ -95,15 +108,20 @@ export default function SeoManager() {
 
   useEffect(() => {
     const normalizedPath = location.split("?")[0].split("#")[0] || "/";
-    const isMarketplaceProduct = normalizedPath.startsWith("/marketplace/") && !["/marketplace/success", "/marketplace/cancel"].includes(normalizedPath);
+    const marketplaceProduct = normalizedPath.startsWith("/marketplace/")
+      ? PUBLIC_MARKETPLACE_PRODUCTS.find((product) => `/marketplace/${product.slug}` === normalizedPath)
+      : undefined;
     const metadata =
       routeMetadata[normalizedPath] ??
-      (isMarketplaceProduct
+      (marketplaceProduct
         ? {
-            title: "Business Bloom Marketplace Product",
-            description: "Explore this Business Bloom digital product and practical business resource.",
+            title: `${marketplaceProduct.name} | Business Bloom`,
+            description: marketplaceProduct.shortDescription,
           }
-        : { title: DEFAULT_TITLE, description: DEFAULT_DESCRIPTION });
+        : {
+            title: "Page Not Found | Business Bloom",
+            description: "The requested Business Bloom page could not be found.",
+          });
 
     const canonicalUrl = `${SITE_URL}${normalizedPath === "/" ? "/" : normalizedPath}`;
 
@@ -124,8 +142,9 @@ export default function SeoManager() {
     }
     canonical.href = canonicalUrl;
 
-    const noindex = normalizedPath === "/marketplace/success" || normalizedPath === "/marketplace/cancel" || normalizedPath === "/404";
-    setMeta('meta[name="robots"]', "name", "robots", noindex ? "noindex,follow" : "index,follow");
+    const knownIndexableRoute = Boolean(routeMetadata[normalizedPath] && !["/marketplace/success", "/marketplace/cancel", "/404"].includes(normalizedPath));
+    const shouldNoindex = !marketplaceProduct && !knownIndexableRoute;
+    setMeta('meta[name="robots"]', "name", "robots", shouldNoindex ? "noindex,follow" : "index,follow");
   }, [location]);
 
   return null;
